@@ -29,6 +29,7 @@ class AuthenticatedSessionController extends Controller
      */
     protected const LOCKOUT_MINUTES = 15;
 
+
     /**
      * Handle an incoming authentication request.
      */

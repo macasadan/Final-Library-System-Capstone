@@ -93,11 +93,51 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-lock text-gray-400"></i>
                     </div>
-                    <input id="password" name="password" type="password" required
+                    <input id="password"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="new-password"
                         class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-500 @enderror"
-                        placeholder="••••••••"
-                        autocomplete="new-password">
+                        onkeyup="checkPasswordStrength(this.value)">
                 </div>
+
+                <!-- Password Strength Indicator -->
+                <div class="mt-2">
+                    <div class="text-sm font-medium text-gray-700">Password Strength:</div>
+                    <div class="mt-1 h-2 bg-gray-200 rounded-full">
+                        <div id="password-strength-meter" class="h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div id="password-strength-text" class="mt-1 text-sm text-gray-600"></div>
+                </div>
+
+                <!-- Password Requirements Checklist -->
+                <div class="mt-2">
+                    <div class="text-sm font-medium text-gray-700">Password must contain:</div>
+                    <ul class="mt-1 text-sm text-gray-600 space-y-1">
+                        <li id="length-check" class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            At least 8 characters
+                        </li>
+                        <li id="uppercase-check" class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            At least one uppercase letter
+                        </li>
+                        <li id="lowercase-check" class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            At least one lowercase letter
+                        </li>
+                        <li id="number-check" class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            At least one number
+                        </li>
+                        <li id="special-check" class="flex items-center">
+                            <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                            At least one special character
+                        </li>
+                    </ul>
+                </div>
+
                 @error('password')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -168,6 +208,66 @@
             </p>
         </div>
     </div>
+
+    <script>
+        function checkPasswordStrength(password) {
+            // Initialize checks
+            let checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[@$!%*?&]/.test(password)
+            };
+
+            // Update check marks
+            Object.keys(checks).forEach(check => {
+                const element = document.getElementById(`${check}-check`);
+                const icon = element.querySelector('i');
+
+                if (checks[check]) {
+                    icon.className = 'fas fa-check-circle text-green-500 mr-2';
+                } else {
+                    icon.className = 'fas fa-times-circle text-red-500 mr-2';
+                }
+            });
+
+            // Calculate strength percentage
+            const strengthPercent = (Object.values(checks).filter(Boolean).length / 5) * 100;
+
+            // Update strength meter
+            const strengthMeter = document.getElementById('password-strength-meter');
+            strengthMeter.style.width = `${strengthPercent}%`;
+
+            // Update color based on strength
+            if (strengthPercent <= 25) {
+                strengthMeter.className = 'h-2 rounded-full transition-all duration-300 bg-red-500';
+            } else if (strengthPercent <= 50) {
+                strengthMeter.className = 'h-2 rounded-full transition-all duration-300 bg-orange-500';
+            } else if (strengthPercent <= 75) {
+                strengthMeter.className = 'h-2 rounded-full transition-all duration-300 bg-yellow-500';
+            } else {
+                strengthMeter.className = 'h-2 rounded-full transition-all duration-300 bg-green-500';
+            }
+
+            // Update strength text
+            const strengthText = document.getElementById('password-strength-text');
+            if (strengthPercent === 100) {
+                strengthText.textContent = 'Strong password';
+                strengthText.className = 'mt-1 text-sm text-green-600';
+            } else if (strengthPercent >= 75) {
+                strengthText.textContent = 'Good password';
+                strengthText.className = 'mt-1 text-sm text-yellow-600';
+            } else if (strengthPercent >= 50) {
+                strengthText.textContent = 'Moderate password';
+                strengthText.className = 'mt-1 text-sm text-orange-600';
+            } else {
+                strengthText.textContent = 'Weak password';
+                strengthText.className = 'mt-1 text-sm text-red-600';
+            }
+        }
+    </script>
+
 </body>
 
 </html>

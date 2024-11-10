@@ -8,6 +8,8 @@
     <title>Library Management System - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add reCAPTCHA script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         .bg-library {
             background-image: url('/api/placeholder/1920/1080');
@@ -25,6 +27,13 @@
 
 <body class="bg-library min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="glass-effect max-w-md w-full space-y-8 p-10 rounded-xl shadow-2xl">
+        <!-- Session Status -->
+        @if (session('status'))
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" role="alert">
+            <p class="text-sm">{{ session('status') }}</p>
+        </div>
+        @endif
+
         <!-- Header Section -->
         <div class="text-center">
             <div class="flex justify-center">
@@ -33,7 +42,7 @@
                 </div>
             </div>
             <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                Welcome Back
+                CTU - LIBRARY SYSTEM LOGIN
             </h2>
             <p class="mt-2 text-sm text-gray-600">
                 Your gateway to knowledge and discovery
@@ -53,9 +62,11 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-envelope text-gray-400"></i>
                     </div>
-                    <input id="email" name="email" type="email" required
+                    <input id="email" name="email" type="email" required autofocus
                         class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('email') border-red-500 @enderror"
-                        placeholder="librarian@example.com">
+                        placeholder="your@email.com"
+                        value="{{ old('email') }}"
+                        autocomplete="username">
                 </div>
                 @error('email')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -73,7 +84,8 @@
                     </div>
                     <input id="password" name="password" type="password" required
                         class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-500 @enderror"
-                        placeholder="••••••••">
+                        placeholder="••••••••"
+                        autocomplete="current-password">
                 </div>
                 @error('password')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -85,7 +97,7 @@
                 <div class="flex items-center">
                     <input id="remember_me" name="remember" type="checkbox"
                         class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+                    <label for="remember_me" class="ml-2 text-sm text-gray-600">
                         Remember me
                     </label>
                 </div>
@@ -97,6 +109,14 @@
                     </a>
                 </div>
                 @endif
+            </div>
+
+            <!-- reCAPTCHA -->
+            <div class="flex justify-center">
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                @error('g-recaptcha-response')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Login Button -->
@@ -111,7 +131,7 @@
             </div>
         </form>
 
-        <!-- Registration Link -->
+        <!-- Register Link -->
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
                 Don't have an account?

@@ -30,4 +30,12 @@ class LoginAttempt extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public static function recentFailedAttempts($email, $minutes = 15)
+    {
+        return static::where('email', $email)
+            ->where('status', 'failed')
+            ->where('created_at', '>=', now()->subMinutes($minutes))
+            ->count();
+    }
 }

@@ -8,6 +8,8 @@
     <title>Library Management System - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add reCAPTCHA script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         .bg-library {
             background-image: url('/api/placeholder/1920/1080');
@@ -40,7 +42,7 @@
                 </div>
             </div>
             <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                Welcome Back
+                CTU - LIBRARY SYSTEM LOGIN
             </h2>
             <p class="mt-2 text-sm text-gray-600">
                 Your gateway to knowledge and discovery
@@ -107,6 +109,14 @@
                     </a>
                 </div>
                 @endif
+            </div>
+
+            <!-- reCAPTCHA -->
+            <div class="flex justify-center">
+                <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                @error('g-recaptcha-response')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Login Button -->
