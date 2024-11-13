@@ -63,13 +63,6 @@ class PcRoomController extends Controller
         }
 
         // Create a new session
-        PcSession::create([
-            'user_id' => Auth::id(),
-            'status' => 'pending',
-            'start_time' => Carbon::now(),
-            'end_time' => Carbon::now()->addHours(1), // Adjust time as needed
-        ]);
-
         $session = $this->createPcRoomSession($request->input('purpose'));
 
         return response()->json(['message' => 'Access requested successfully']);
@@ -78,7 +71,7 @@ class PcRoomController extends Controller
     private function createPcRoomSession($purpose)
     {
         return PcSession::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'status' => 'pending',
             'purpose' => $purpose,
             'start_time' => Carbon::now(),

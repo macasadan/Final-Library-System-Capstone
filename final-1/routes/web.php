@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLostItemController;
 use App\Http\Controllers\Admin\AdminPCRoomController;
 use App\Http\Controllers\Admin\AdminDiscussionRoomController;
+use App\Http\Controllers\Admin\AdminBorrowController;
 
 // Public Routes
 Route::get('/', function () {
@@ -28,8 +29,20 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
 
     // Admin Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // Book routes
     Route::resource('books', AdminBookController::class);
     Route::get('/returned_books', [AdminController::class, 'returnedBooks'])->name('returnedBooks');
+
+    // Books Borrow routes
+    Route::prefix('borrows')->name('borrows.')->group(function () {
+        Route::get('/pending', [AdminBorrowController::class, 'pending'])->name('pending');
+        Route::get('/', [AdminBorrowController::class, 'index'])->name('index');
+        Route::post('/{id}/approve', [AdminBorrowController::class, 'approve'])->name('approve');
+        Route::post('/{id}/reject', [AdminBorrowController::class, 'reject'])->name('reject');
+    });
+
+
 
     // Discussion room routes
     Route::get('/discussion_rooms', [AdminDiscussionRoomController::class, 'index'])

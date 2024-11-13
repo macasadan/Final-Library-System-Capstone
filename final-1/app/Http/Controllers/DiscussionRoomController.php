@@ -6,6 +6,7 @@ use App\Models\DiscussionRoom;
 use App\Models\DiscussionRoomReservation;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DiscussionRoomController extends Controller
 {
@@ -15,7 +16,7 @@ class DiscussionRoomController extends Controller
         $rooms = DiscussionRoom::all();
 
         // Get the reservations for the current logged-in user
-        $userId = auth()->id();
+        $userId = Auth::id();
         $userReservations = DiscussionRoomReservation::where('user_id', $userId)
             ->with('discussionRoom')
             ->latest()
@@ -60,7 +61,7 @@ class DiscussionRoomController extends Controller
         }
 
         $reservation = DiscussionRoomReservation::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'discussion_room_id' => $request->discussion_room_id,
             'start_time' => $request->start_time,
             'end_time' => $request->end_time,

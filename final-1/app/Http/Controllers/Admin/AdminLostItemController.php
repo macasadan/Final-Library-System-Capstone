@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LostItem;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class AdminLostItemController extends Controller
 {
@@ -41,7 +42,7 @@ class AdminLostItemController extends Controller
         ]);
 
         $lostItem = LostItem::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'item_type' => $request->item_type,
             'description' => $request->description,
             'date_lost' => $request->date_lost,

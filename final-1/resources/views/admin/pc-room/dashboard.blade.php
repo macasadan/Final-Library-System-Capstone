@@ -257,6 +257,36 @@
                                     }
                                 };
 
+                                // Reject session handler
+                                window.handleRejectSession = async function(sessionId) {
+                                    if (!confirm('Are you sure you want to reject this request?')) {
+                                        return;
+                                    }
+
+                                    try {
+                                        const response = await fetch(`/admin/pc-room/reject/${sessionId}`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': csrfToken
+                                            }
+                                        });
+
+                                        if (!response.ok) {
+                                            throw new Error('Failed to reject session');
+                                        }
+
+                                        // Remove the session row or reload the page
+                                        const sessionRow = document.getElementById(`pending-session-${sessionId}`);
+                                        if (sessionRow) {
+                                            sessionRow.remove();
+                                        }
+                                        // Reload to update the counts and status
+                                        window.location.reload();
+                                    } catch (error) {
+                                        alert('Error rejecting session: ' + error.message);
+                                    }
+                                };
                                 // Initialize timer updates
                                 updateTimers();
                                 // Update every second

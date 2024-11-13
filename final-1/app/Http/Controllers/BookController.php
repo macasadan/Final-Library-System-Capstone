@@ -72,18 +72,33 @@ class BookController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
-        $books = Book::where('title', 'LIKE', "%{$query}%")
-            ->orWhere('author', 'LIKE', "%{$query}%")
-            ->get();
+        $books = Book::where(function ($q) use ($query) {
+            $q->where('title', 'LIKE', "%{$query}%")
+                ->orWhere('author', 'LIKE', "%{$query}%");
+        })->get();
 
         return view('books.search', compact('books'));
     }
 
     // Users Borrow a book
-    public function borrow(Book $book)
+    public function borrow(Request $request, Book $book)
     {
-        // Check if the book is available
-        if ($book->quantity > 0) {
+        $request->validate([
+            'id_number' => 'required|string',
+            'course' => 'required|string',
+            'department' => 'required|in:COT,COE,CEAS,CME'
+        ]);
+
+        if ($book->quantity <= 0) {
+            return redirect()->back()
+                ->with('error', 'Sorry, this book is no longer available.')
+                ->withInput();
+        }
+
+        // Start transaction
+        DB::beginTransaction();
+
+        try {
             // Reduce the quantity of the book
             $book->decrement('quantity');
 
@@ -91,16 +106,24 @@ class BookController extends Controller
             $borrow = Borrow::create([
                 'user_id' => Auth::id(),
                 'book_id' => $book->id,
-                'borrow_date' => now(), // Set the current timestamp as the borrowed date
-                'due_date' => now()->addDays(14), // Example: Set the due date 14 days from now
+                'id_number' => $request->id_number,
+                'course' => $request->course,
+                'department' => $request->department,
+                'borrow_date' => now(),
+                'due_date' => now()->addDays(14),
+                'status' => Borrow::STATUS_PENDING
             ]);
 
-            return redirect()->back()->with('success', 'Book borrowed successfully!');
-        } else {
-            return redirect()->back()->with('error', 'Book is not available.');
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Book borrowed successfully! Please return it by ' . $borrow->due_date->format('M d, Y'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'An error occurred while processing your request. Please try again.')
+                ->withInput();
         }
     }
-
 
     // Borrowing and Reservation Logic that shows in user  dashboard
 
@@ -114,8 +137,6 @@ class BookController extends Controller
             ->get();
         return view('borrowed_books', compact('borrowedBooks'));
     }
-
-
 
 
     // Show available books

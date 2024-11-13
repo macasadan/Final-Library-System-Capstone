@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -78,7 +79,7 @@ class AuthenticatedSessionController extends Controller
             $attempt->update(['status' => 'success']);
 
             // Update last login info
-            Auth::user()->update([
+            User::where('id', Auth::id())->update([
                 'last_login_at' => Carbon::now(),
                 'last_login_ip' => $request->ip()
             ]);

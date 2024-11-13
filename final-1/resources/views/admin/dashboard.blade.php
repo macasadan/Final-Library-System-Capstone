@@ -15,6 +15,23 @@
             </a>
         </div>
 
+        <!-- Borrowed Books Management Section -->
+        <div class="p-6 bg-blue-100 rounded-lg shadow-md border border-blue-300">
+            <h3 class="text-xl font-semibold text-gray-700">Borrowed Books</h3>
+            <p class="text-gray-600 mt-1">Manage book borrowing requests and track borrowed books.</p>
+            <div class="flex flex-col space-y-2">
+                <a href="{{ route('admin.borrows.pending') }}" class="mt-4 inline-block bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                    Pending Requests
+                    @if(isset($pendingCount) && $pendingCount > 0)
+                    <span class="ml-2 bg-white text-yellow-600 px-2 rounded-full">{{ $pendingCount }}</span>
+                    @endif
+                </a>
+                <a href="{{ route('admin.borrows.index') }}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    All Borrowed Books
+                </a>
+            </div>
+        </div>
+
         <!-- Returned Books Section -->
         <div class="p-6 bg-yellow-100 rounded-lg shadow-md border border-yellow-300">
             <h3 class="text-xl font-semibold text-gray-700">Returned Books</h3>

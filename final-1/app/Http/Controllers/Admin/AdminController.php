@@ -30,7 +30,13 @@ class AdminController extends Controller
         dd($expiredReservations); // This will show the contents of $expiredReservations
 
         return view('admin.dashboard', compact('expiredReservations'));
+
+        // Fetch the number of pending borrows
+        $pendingCount = Borrow::where('status', 'pending')->count();
+        return view('admin.dashboard', compact('pendingCount'));
     }
+
+
 
     // Method for displaying the list of returned books
     public function returnedBooks(Request $request)
