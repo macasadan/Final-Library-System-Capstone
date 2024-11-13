@@ -22,12 +22,12 @@
         </a>
 
         <!-- Reserve PC Room -->
-        <a href="#" class="block p-4 bg-indigo-500 text-white text-center rounded-lg hover:bg-indigo-700">
-            Reserve PC Room
+        <a href="{{ route('pc-room.index') }}" class="block p-4 bg-indigo-500 text-white text-center rounded-lg hover:bg-indigo-700">
+            PC Room Occupancy
         </a>
 
         <!-- Report Lost Items -->
-        <a href="{{ route('lost_items.report') }}" class="block p-4 bg-red-500 text-white text-center rounded-lg hover:bg-red-700">
+        <a href="{{ route('lost_items.index') }}" class="block p-4 bg-red-500 text-white text-center rounded-lg hover:bg-red-700">
             Report Lost Items
         </a>
 
@@ -36,7 +36,6 @@
             View Available Books
         </a>
     </div>
-
 
 
     <!-- Borrowed Books Section -->

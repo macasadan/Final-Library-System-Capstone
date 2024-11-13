@@ -4,24 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\LostItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class LostItemController extends Controller
 {
-    public function report(Request $request)
+    // Display list of lost items for users
+    public function index()
     {
-        $request->validate([
-            'item_type' => 'required|string',
-            'description' => 'nullable|string',
-        ]);
+        $lostItems = LostItem::with('user')->where('status', 'lost')->latest()->get();
+        return view('lost_items.index', compact('lostItems'));
+    }
 
-        LostItem::create([
-            'user_id' => Auth::id(),
-            'item_type' => $request->item_type,
-            'description' => $request->description,
-            'reported_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Lost item reported successfully!');
+    // Display a specific lost item with details for users
+    public function show(LostItem $lostItem)
+    {
+        return view('lost_items.show', compact('lostItem'));
     }
 }

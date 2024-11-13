@@ -48,6 +48,18 @@
             @endif
             @endisset
         </div>
+
+        <!-- Lost Item Management Section -->
+        <div class="p-6 bg-red-100 rounded-lg shadow-md border border-red-300">
+            <h3 class="text-xl font-semibold text-gray-700">Lost Item Management</h3>
+            <p class="text-gray-600 mt-1">Manage reported lost items and create new reports.</p>
+            <a href="{{ route('admin.lost_items.index') }}" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                View Lost Items
+            </a>
+            <a href="{{ route('admin.lost_items.create') }}" class="mt-4 inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Report Lost Item
+            </a>
+        </div>
     </div>
 </div>
 @endsection

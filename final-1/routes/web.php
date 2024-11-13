@@ -25,6 +25,8 @@ Route::middleware('guest')->group(function () {
 
 // Admin Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+
+    // Admin Dashboard
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::resource('books', AdminBookController::class);
     Route::get('/returned_books', [AdminController::class, 'returnedBooks'])->name('returnedBooks');
@@ -42,7 +44,24 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         ->name('discussion_rooms.update-status');
     Route::get('/discussion_rooms/expired', [AdminDiscussionRoomController::class, 'expired'])
         ->name('discussion_rooms.expired');
+
+    // PC Room admin routes
+    Route::prefix('pc-room')->name('pc-room.')->group(function () {
+        Route::get('/dashboard', [AdminPcRoomController::class, 'dashboard'])->name('dashboard');
+        Route::post('/approve/{id}', [AdminPcRoomController::class, 'approve'])->name('approve');
+        Route::post('/reject/{id}', [AdminPcRoomController::class, 'reject'])->name('reject');
+        Route::post('/end-session/{id}', [AdminPcRoomController::class, 'endSession'])->name('end-session');
+    });
+
+    // Lost Items Report
+    Route::get('/lost_items', [AdminLostItemController::class, 'index'])->name('lost_items.index');
+    Route::get('/lost_items/create', [AdminLostItemController::class, 'create'])->name('lost_items.create');
+    Route::post('/lost_items', [AdminLostItemController::class, 'store'])->name('lost_items.store');
+    Route::get('/lost_items/{lostItem}', [AdminLostItemController::class, 'show'])->name('lost_items.show');
+    Route::patch('/lost_items/{lostItem}/status', [AdminLostItemController::class, 'updateStatus'])->name('lost_items.update-status');
+    Route::delete('/lost_items/{lostItem}', [AdminLostItemController::class, 'destroy'])->name('lost_items.destroy');
 });
+
 
 // User Routes
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -62,15 +81,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/books/return/{borrowId}', [BookController::class, 'returnBook'])->name('books.return');
 
     // Lost items routes
-    Route::get('/lost-items/report', function () {
-        return view('lost_items.report');
-    });
-    Route::post('/lost-items/report', [LostItemController::class, 'report'])
-        ->name('lost_items.report');
+    Route::get('/lost-items', [LostItemController::class, 'index'])->name('lost_items.index');
+    Route::get('/lost-items/{lostItem}', [LostItemController::class, 'show'])->name('lost_items.show');
 
     // PC Room routes
-    Route::post('/pc-rooms/reserve/{room}', [PCRoomController::class, 'reserve'])
-        ->name('pc_rooms.reserve');
+    Route::prefix('pc-room')->name('pc-room.')->group(function () {
+        Route::get('/', [PcRoomController::class, 'index'])->name('index');
+        Route::post('/pc-room/request-access', [PcRoomController::class, 'requestAccess'])->name('pc-room.request-access');
+        Route::post('/request-access', [PcRoomController::class, 'requestAccess'])->name('request');
+        Route::post('/end-session', [PcRoomController::class, 'endSession'])->name('end-session');
+    });
 
     // Discussion Room routes
     Route::get('/reservations', [DiscussionRoomController::class, 'index'])
