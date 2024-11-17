@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\Borrow;
-use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\Category;
 
 class BookController extends Controller
 {
@@ -17,7 +16,6 @@ class BookController extends Controller
     public function dashboard()
     {
         // Fetch reserved books for the authenticated user
-
 
         // Fetch borrowed books for the authenticated user - only non-returned books
         $borrowedBooks = Borrow::where('user_id', Auth::id())
@@ -75,7 +73,7 @@ class BookController extends Controller
         $books = Book::where(function ($q) use ($query) {
             $q->where('title', 'LIKE', "%{$query}%")
                 ->orWhere('author', 'LIKE', "%{$query}%");
-        })->get();
+        })->with('category')->get();
 
         return view('books.search', compact('books'));
     }
@@ -110,7 +108,7 @@ class BookController extends Controller
                 'course' => $request->course,
                 'department' => $request->department,
                 'borrow_date' => now(),
-                'due_date' => now()->addDays(14),
+                'due_date' => now()->addDays(1),
                 'status' => Borrow::STATUS_PENDING
             ]);
 
@@ -138,11 +136,25 @@ class BookController extends Controller
         return view('borrowed_books', compact('borrowedBooks'));
     }
 
+    // Show books by category
+    public function booksByCategory(Category $category)
+    {
+        $books = $category->books()
+            ->where('quantity', '>', 0)
+            ->get();
+
+        return view('books.book-category', compact('category', 'books'));
+    }
 
     // Show available books
     public function index()
     {
-        $books = Book::where('quantity', '>', 0)->get();
-        return view('books.index', compact('books'));
+        $categories = Category::has('books')
+            ->withCount('books')
+            ->get();
+        $books = Book::with('category')
+            ->where('quantity', '>', 0)
+            ->get();
+        return view('books.index', compact('books', 'categories'));
     }
 }

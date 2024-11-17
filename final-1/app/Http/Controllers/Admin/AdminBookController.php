@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Borrow;
+use App\Models\Category;
 
 class AdminBookController extends Controller
 {
@@ -20,7 +21,8 @@ class AdminBookController extends Controller
     // Show the form for creating a new book
     public function create()
     {
-        return view('admin.books.create');
+        $categories = Category::orderBy('name')->get();
+        return view('admin.books.create', compact('categories'));
     }
 
     // Store a newly created book in the database
@@ -29,10 +31,11 @@ class AdminBookController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'published_year' => 'required|integer',
+            'published_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'description' => 'nullable|string',
             'isbn' => 'required|string|unique:books,isbn',
             'quantity' => 'required|integer|min:1',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
         Book::create($request->all());
@@ -43,10 +46,9 @@ class AdminBookController extends Controller
     // Show the form for editing a book
     public function edit(Book $book)
     {
-        return view('admin.books.edit', compact('book'));
+        $categories = Category::orderBy('name')->get();
+        return view('admin.books.edit', compact('book', 'categories'));
     }
-
-
 
     // Update a book in the database
     public function update(Request $request, Book $book)
@@ -54,21 +56,28 @@ class AdminBookController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'published_year' => 'required|integer',
+            'published_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'description' => 'nullable|string',
             'isbn' => 'required|string|unique:books,isbn,' . $book->id,
             'quantity' => 'required|integer|min:1',
+            'category_id' => 'required|exists:categories,id',
         ]);
 
         $book->update($request->all());
-
         return redirect()->route('admin.books.index')->with('success', 'Book updated successfully.');
     }
 
     // Remove a book from the database
     public function destroy(Book $book)
     {
+        // Check if book can be deleted (no active borrows)
+        if ($book->borrows()->whereNull('returned_at')->exists()) {
+            return redirect()->route('admin.books.index')
+                ->with('error', 'Cannot delete book. It has active borrowers.');
+        }
+
         $book->delete();
-        return redirect()->route('admin.books.index')->with('success', 'Book deleted successfully.');
+        return redirect()->route('admin.books.index')
+            ->with('success', 'Book deleted successfully.');
     }
 }

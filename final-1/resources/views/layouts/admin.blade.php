@@ -32,7 +32,7 @@
                 </a>
                 <a href="{{ route('admin.borrows.index') }}"
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.borrows.index') ? 'bg-blue-700' : '' }}">
-                    All Borrowed Books
+                    Borrowed Books
                 </a>
                 <a href="{{ route('admin.returnedBooks') }}"
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.returnedBooks') ? 'bg-blue-700' : '' }}">

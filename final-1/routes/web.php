@@ -92,6 +92,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/books/borrow/{book}', [BookController::class, 'borrow'])->name('books.borrow');
     Route::get('/borrowed_books', [BookController::class, 'borrowedBooks'])->name('borrowed.books');
     Route::post('/books/return/{borrowId}', [BookController::class, 'returnBook'])->name('books.return');
+    Route::get('/books/category/{category}', [BookController::class, 'booksByCategory'])->name('books.category')->where('category', '[0-9]+');
 
     // Lost items routes
     Route::get('/lost-items', [LostItemController::class, 'index'])->name('lost_items.index');

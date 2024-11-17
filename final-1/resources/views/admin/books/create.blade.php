@@ -14,8 +14,12 @@
                 <input type="text"
                     name="title"
                     id="title"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="{{ old('title') }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('title') border-red-500 @enderror"
                     required>
+                @error('title')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -23,8 +27,12 @@
                 <input type="text"
                     name="author"
                     id="author"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="{{ old('author') }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('author') border-red-500 @enderror"
                     required>
+                @error('author')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -32,8 +40,14 @@
                 <input type="number"
                     name="published_year"
                     id="published_year"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="{{ old('published_year') }}"
+                    min="1900"
+                    max="{{ date('Y') + 1 }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('published_year') border-red-500 @enderror"
                     required>
+                @error('published_year')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -41,8 +55,29 @@
                 <textarea name="description"
                     id="description"
                     rows="3"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    required></textarea>
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('description') border-red-500 @enderror"
+                    required>{{ old('description') }}</textarea>
+                @error('description')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id"
+                    id="category_id"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('category_id') border-red-500 @enderror"
+                    required>
+                    <option value="">Select a category</option>
+                    @foreach ($categories as $category)
+                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                    @endforeach
+                </select>
+                @error('category_id')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -50,8 +85,12 @@
                 <input type="text"
                     name="isbn"
                     id="isbn"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="{{ old('isbn') }}"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('isbn') border-red-500 @enderror"
                     required>
+                @error('isbn')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -59,9 +98,25 @@
                 <input type="number"
                     name="quantity"
                     id="quantity"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="{{ old('quantity', 1) }}"
+                    min="1"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('quantity') border-red-500 @enderror"
                     required>
+                @error('quantity')
+                <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
+
+            @if ($errors->any())
+            <div class="bg-red-50 text-red-500 p-4 rounded-md">
+                <p class="font-medium">Please fix the following errors:</p>
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
 
             <div class="flex justify-end space-x-3">
                 <a href="{{ route('admin.books.index') }}"

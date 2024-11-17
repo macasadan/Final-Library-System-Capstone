@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+const { fontFamily } = require("tailwindcss/defaultTheme")
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -19,3 +20,25 @@ export default {
 
     plugins: [forms],
 };
+
+module.exports = {
+    darkMode: ["class"],
+    content: [
+      "./resources/**/*.{php,js,jsx,ts,tsx}",
+    ],
+    theme: {
+      container: {
+        center: true,
+        padding: "2rem",
+        screens: {
+          "2xl": "1400px",
+        },
+      },
+      extend: {
+        fontFamily: {
+          sans: ["Inter var", ...fontFamily.sans],
+        },
+      },
+    },
+    plugins: [],
+  }
