@@ -1,46 +1,50 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Library Books</h1>
-        <form action="{{ route('books.search') }}" method="GET" class="mb-6">
+<div class="space-y-6">
+    {{-- Header Section --}}
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-3xl font-bold text-gray-900">Library Books</h1>
+
+        {{-- Search Bar --}}
+        <form action="{{ route('books.search') }}" method="GET" class="mt-4 sm:mt-0">
             <div class="flex gap-2">
                 <input
                     type="text"
                     name="query"
-                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Search by title or author"
+                    class="flex-1 min-w-[200px] rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Search books..."
                     value="{{ request('query') }}">
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                     Search
                 </button>
             </div>
         </form>
     </div>
 
+    {{-- Alert Messages --}}
     @if(session('success'))
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
         {{ session('success') }}
     </div>
     @endif
 
     @if(session('error'))
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
         {{ session('error') }}
     </div>
     @endif
 
-    <!-- Categories Section -->
-    <div class="mb-8">
+    {{-- Categories Section --}}
+    <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-xl font-semibold text-gray-900 mb-4">Book Categories</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach($categories as $category)
             @if($category->id)
             <a href="{{ route('books.category', ['category' => $category->id]) }}"
-                class="inline-flex justify-between items-center px-4 py-2 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 transition-colors">
+                class="flex justify-between items-center px-4 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-50 transition-colors">
                 <span>{{ $category->name }}</span>
-                <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-sm">
+                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-sm">
                     {{ $category->books_count }}
                 </span>
             </a>
@@ -86,63 +90,69 @@
         </div>
 
         <!-- Borrow Modal -->
-        <div class="modal fade" id="borrowModal{{ $book->id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="bg-white rounded-lg shadow-lg">
+        <!-- Borrow Modal -->
+        <div class="modal fade" id="borrowModal{{ $book->id }}" tabindex="-1" aria-labelledby="borrowModalLabel{{ $book->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-white rounded-lg shadow-xl">
                     <div class="p-6">
-                        <h5 class="text-xl font-semibold mb-4">Borrow "{{ $book->title }}"</h5>
-                        <button type="button" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500" data-bs-dismiss="modal">
-                            <span class="sr-only">Close</span>
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-semibold text-gray-900" id="borrowModalLabel{{ $book->id }}">Borrow "{{ $book->title }}"</h3>
+                            <button type="button" class="text-gray-400 hover:text-gray-500" data-bs-dismiss="modal" aria-label="Close">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
 
-                        <form action="{{ route('books.borrow', $book->id) }}" method="POST">
+                        <form action="{{ route('books.borrow', $book->id) }}" method="POST" class="space-y-4">
                             @csrf
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="id_number" class="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
-                                    <input type="text"
-                                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        id="id_number"
-                                        name="id_number"
-                                        required>
-                                </div>
-
-                                <div>
-                                    <label for="course" class="block text-sm font-medium text-gray-700 mb-1">Course</label>
-                                    <input type="text"
-                                        class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        id="course"
-                                        name="course"
-                                        required>
-                                </div>
-
-                                <div>
-                                    <label for="department" class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                                    <select class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        id="department"
-                                        name="department"
-                                        required>
-                                        <option value="">Select Department</option>
-                                        <option value="COT">COT</option>
-                                        <option value="COE">COE</option>
-                                        <option value="CEAS">CEAS</option>
-                                        <option value="CME">CME</option>
-                                    </select>
-                                </div>
+                            <div>
+                                <label for="id_number{{ $book->id }}" class="block mb-1 text-sm font-medium text-gray-700">
+                                    ID Number
+                                </label>
+                                <input type="text"
+                                    id="id_number{{ $book->id }}"
+                                    name="id_number"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
                             </div>
 
-                            <div class="mt-6 flex justify-end space-x-3">
+                            <div>
+                                <label for="course{{ $book->id }}" class="block mb-1 text-sm font-medium text-gray-700">
+                                    Course
+                                </label>
+                                <input type="text"
+                                    id="course{{ $book->id }}"
+                                    name="course"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
+                            </div>
+
+                            <div>
+                                <label for="department{{ $book->id }}" class="block mb-1 text-sm font-medium text-gray-700">
+                                    Department
+                                </label>
+                                <select id="department{{ $book->id }}"
+                                    name="department"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
+                                    <option value="">Select Department</option>
+                                    <option value="COT">College of Technology (COT)</option>
+                                    <option value="COE">College of Engineering (COE)</option>
+                                    <option value="CEAS">College of Education, Arts and Sciences (CEAS)</option>
+                                    <option value="CME">College of Management and Economics (CME)</option>
+                                </select>
+                            </div>
+
+                            <div class="flex justify-end gap-3 mt-6">
                                 <button type="button"
-                                    class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                    class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                                     data-bs-dismiss="modal">
-                                    Close
+                                    Cancel
                                 </button>
                                 <button type="submit"
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                                    Borrow Book
+                                    class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    Confirm Borrow
                                 </button>
                             </div>
                         </form>
