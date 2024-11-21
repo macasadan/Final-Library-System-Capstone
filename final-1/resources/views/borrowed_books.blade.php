@@ -34,6 +34,15 @@
                                     <p class="mt-1 text-gray-900">{{ $borrow->book->author }}</p>
                                 </div>
                                 <div>
+                                    @if($borrow->book->categories->isNotEmpty())
+                                    <p>Categories:
+                                        @foreach($borrow->book->categories as $category)
+                                        {{ $category->name }}{{ !$loop->last ? ', ' : '' }}
+                                        @endforeach
+                                    </p>
+                                    @endif
+                                </div>
+                                <div>
                                     <span class="text-sm font-medium text-gray-500">Borrowed Date</span>
                                     <p class="mt-1 text-gray-900">
                                         {{ \Carbon\Carbon::parse($borrow->borrow_date)->format('M d, Y') }}

@@ -19,8 +19,6 @@ return new class extends Migration
             $table->string('isbn')->unique();
             $table->text('description')->nullable();
             $table->integer('quantity')->default(1); // Number of copies available
-            $table->unsignedBigInteger('category_id')->nullable();
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
             $table->timestamps();
         });
     }

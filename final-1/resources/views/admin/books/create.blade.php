@@ -63,19 +63,16 @@
             </div>
 
             <div>
-                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
-                <select name="category_id"
-                    id="category_id"
+                <label for="category_ids" class="block text-sm font-medium text-gray-700">Categories</label>
+                <select name="category_ids[]" id="category_ids" multiple
                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('category_id') border-red-500 @enderror"
                     required>
                     <option value="">Select a category</option>
                     @foreach ($categories as $category)
-                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }}
-                    </option>
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
                 </select>
-                @error('category_id')
+                @error('category_ids')
                 <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
                 @enderror
             </div>
