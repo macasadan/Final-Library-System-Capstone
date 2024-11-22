@@ -7,12 +7,15 @@ use App\Http\Controllers\LostItemController;
 use App\Http\Controllers\PCRoomController;
 use App\Http\Controllers\DiscussionRoomController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Controllers\Admin\AdminBookController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLostItemController;
 use App\Http\Controllers\Admin\AdminPCRoomController;
 use App\Http\Controllers\Admin\AdminDiscussionRoomController;
 use App\Http\Controllers\Admin\AdminBorrowController;
+use App\Http\Controllers\SuperAdmin\SuperadminmainnaniController;
+use App\Http\Controllers\SuperAdmin\SuperAdminBookController;
 
 // Public Routes
 Route::get('/', function () {
@@ -23,11 +26,28 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     // The reCAPTCHA validation will work through auth.php routes
 });
-
+// Super Admin Routes
+Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::get('/dashboard', [SuperadminmainnaniController::class, 'dashboard'])->name('dashboard');
+    Route::get('/manage-admins', [SuperadminmainnaniController::class, 'manageAdmins'])->name('manage-admins');
+    Route::get('/create-admin', [SuperadminmainnaniController::class, 'createAdmin'])->name('create-admin');
+    Route::post('/store-admin', [SuperadminmainnaniController::class, 'storeAdmin'])->name('store-admin');
+    Route::get('/system-logs', [SuperadminmainnaniController::class, 'systemLogs'])->name('system-logs');
+    Route::get('pc-room/session-logs', [SuperadminmainnaniController::class, 'sessionLogs'])
+    ->name('session-logs');
+    Route::get('/lost-item-logs', [SuperadminmainnaniController::class, 'lostItemLogs'])
+    ->name('lost-item-logs');
+    Route::get('returned-book-logs', [SuperadminmainnaniController::class, 'returnedBookLogs'])
+    ->name('returned-book-logs');
+      // Book routes
+      Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
+      Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
+});
 // Admin Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
 
     // Admin Dashboard
+    
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // Book routes

@@ -38,10 +38,11 @@ class AuthenticatedSessionController extends Controller
     {
         // Check for previous failed attempts
         $recentAttempts = LoginAttempt::where('ip_address', $request->ip())
-            ->where('email', $request->email)
-            ->where('status', 'failed')
-            ->where('created_at', '>=', now()->subMinutes(self::LOCKOUT_MINUTES))
-            ->count();
+        ->where('email', $request->email)
+        ->where('status', 'failed')
+        ->where('created_at', '>=', now()->subMinutes(self::LOCKOUT_MINUTES))
+        ->count();
+
 
         if ($recentAttempts >= self::MAX_ATTEMPTS) {
             return back()->withErrors([
@@ -49,18 +50,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $request->session()->regenerate();
-
-            // Here is where we implement the role-based redirection
-            $user = Auth::user();
-
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            }
-
-            return redirect()->route('dashboard');
-        }
+       
 
         // Record login attempt
         $attempt = LoginAttempt::create([
@@ -90,6 +80,22 @@ class AuthenticatedSessionController extends Controller
                 'email' => $request->email,
                 'ip' => $request->ip()
             ]);
+
+            if (Auth::attempt($request->only('email', 'password'))) {
+                $request->session()->regenerate();
+        
+                $user = Auth::user();
+        
+                if ($user->is_super_admin) {
+                    return redirect()->route('super-admin.dashboard');
+                }
+        
+                if ($user->is_admin) {
+                    return redirect()->route('admin.dashboard');
+                }
+        
+                return redirect()->route('dashboard');
+            }
 
             return redirect()->intended(RouteServiceProvider::HOME);
         } catch (\Exception $e) {
