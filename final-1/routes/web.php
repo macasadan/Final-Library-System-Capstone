@@ -14,6 +14,9 @@ use App\Http\Controllers\Admin\AdminLostItemController;
 use App\Http\Controllers\Admin\AdminPCRoomController;
 use App\Http\Controllers\Admin\AdminDiscussionRoomController;
 use App\Http\Controllers\Admin\AdminBorrowController;
+use App\Http\Controllers\SuperAdmin\SuperAdminBookController;
+use App\Http\Controllers\SuperAdmin\SuperadminmainnaniController;
+use App\Http\Controllers\Admin\ReturnedBooksController;
 
 // Public Routes
 Route::get('/', function () {

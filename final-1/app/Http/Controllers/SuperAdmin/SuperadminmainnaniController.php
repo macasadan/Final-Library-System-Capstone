@@ -10,7 +10,8 @@ use App\Models\PcSession;
 use App\Models\DiscussionRoom;
 use App\Models\LostItem;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class SuperadminmainnaniController extends Controller
 {
@@ -22,8 +23,8 @@ class SuperadminmainnaniController extends Controller
         $totalDiscussionRooms = DiscussionRoom::count();
 
         return view('super-admin.dashboard', compact(
-            'totalUsers', 
-            'totalBooks', 
+            'totalUsers',
+            'totalBooks',
             'totalAdmins',
             'totalDiscussionRooms'
         ));
@@ -73,39 +74,38 @@ class SuperadminmainnaniController extends Controller
         return view('super-admin.user-management', compact('users'));
     }
     public function books()
-{
-    $books = Book::with('category')->paginate(10);
-    return view('super-admin.books.index', compact('books'));
-}
-public function sessionLogs()
-{
-    $completedSessions = PcSession::with('user')
-        ->where('status', 'completed')
-        ->orderBy('end_time', 'desc')
-        ->get();
+    {
+        $books = Book::with('category')->paginate(10);
+        return view('super-admin.books.index', compact('books'));
+    }
+    public function sessionLogs()
+    {
+        $completedSessions = PcSession::with('user')
+            ->where('status', 'completed')
+            ->orderBy('end_time', 'desc')
+            ->get();
 
-    return view('super-admin.session-logs', [
-        'completedSessions' => $completedSessions
-    ]);
-}
-public function lostItemLogs()
-{
-    $lostItemLogs = LostItem::with('user')
-        ->orderBy('created_at', 'desc')
-        ->get();
+        return view('super-admin.session-logs', [
+            'completedSessions' => $completedSessions
+        ]);
+    }
+    public function lostItemLogs()
+    {
+        $lostItemLogs = LostItem::with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    return view('super-admin.lost-item-logs', [
-        'lostItemLogs' => $lostItemLogs
-    ]);
-}
-public function returnedBookLogs()
-{
-    $returnedBooks = Borrow::with(['user', 'book'])
-        ->whereNotNull('returned_at')
-        ->orderBy('returned_at', 'desc')
-        ->paginate(10);
+        return view('super-admin.lost-item-logs', [
+            'lostItemLogs' => $lostItemLogs
+        ]);
+    }
+    public function returnedBookLogs()
+    {
+        $returnedBooks = Borrow::with(['user', 'book'])
+            ->whereNotNull('returned_at')
+            ->orderBy('returned_at', 'desc')
+            ->paginate(10);
 
-    return view('super-admin.returned-book-logs', compact('returnedBooks'));
-}
-
+        return view('super-admin.returned-book-logs', compact('returnedBooks'));
+    }
 }
