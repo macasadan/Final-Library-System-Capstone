@@ -40,15 +40,11 @@
         <h3 class="text-xl font-semibold text-gray-900 mb-4">Book Categories</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach($categories as $category)
-            @if($category->id)
             <a href="{{ route('books.category', ['category' => $category->id]) }}"
                 class="flex justify-between items-center px-4 py-2 rounded-lg border border-red-500 text-red-600 hover:bg-red-50 transition-colors">
-                <span>{{ $category->name }}</span>
-                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-sm">
-                    {{ $category->books_count }}
-                </span>
+                {{ $category->name }}
+                <span class="ml-2 text-sm">{{ $category->books_count }} books</span>
             </a>
-            @endif
             @endforeach
         </div>
     </div>
@@ -60,13 +56,16 @@
                 <h5 class="text-xl font-semibold text-gray-900 mb-2">{{ $book->title }}</h5>
                 <h6 class="text-sm text-gray-600 mb-4">by {{ $book->author }}</h6>
 
-                @if($book->category)
+                @if($book->categories->isNotEmpty())
                 <p class="text-sm mb-4">
-                    <span class="font-semibold">Category:</span>
-                    <a href="{{ route('books.category', ['category' => $book->category->id]) }}"
+                    <span class="font-semibold">Categories:</span>
+                    @foreach($book->categories as $category)
+                    <a href="{{ route('books.category', ['category' => $category->id]) }}"
                         class="text-blue-600 hover:underline">
-                        {{ $book->category->name }}
+                        {{ $category->name }}
                     </a>
+                    @if(!$loop->last), @endif
+                    @endforeach
                 </p>
                 @endif
 

@@ -14,12 +14,18 @@ use App\Http\Controllers\Admin\AdminLostItemController;
 use App\Http\Controllers\Admin\AdminPCRoomController;
 use App\Http\Controllers\Admin\AdminDiscussionRoomController;
 use App\Http\Controllers\Admin\AdminBorrowController;
-use App\Http\Controllers\SuperAdmin\SuperadminmainnaniController;
-use App\Http\Controllers\SuperAdmin\SuperAdminBookController;
 
 // Public Routes
 Route::get('/', function () {
     return view('welcome');
+});
+
+// Profile Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Guest Routes (for non-authenticated users)
@@ -34,20 +40,20 @@ Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')-
     Route::post('/store-admin', [SuperadminmainnaniController::class, 'storeAdmin'])->name('store-admin');
     Route::get('/system-logs', [SuperadminmainnaniController::class, 'systemLogs'])->name('system-logs');
     Route::get('pc-room/session-logs', [SuperadminmainnaniController::class, 'sessionLogs'])
-    ->name('session-logs');
+        ->name('session-logs');
     Route::get('/lost-item-logs', [SuperadminmainnaniController::class, 'lostItemLogs'])
-    ->name('lost-item-logs');
+        ->name('lost-item-logs');
     Route::get('returned-book-logs', [SuperadminmainnaniController::class, 'returnedBookLogs'])
-    ->name('returned-book-logs');
-      // Book routes
-      Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
-      Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
+        ->name('returned-book-logs');
+    // Book routes
+    Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
+    Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
 });
 // Admin Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
 
     // Admin Dashboard
-    
+
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // Book routes
@@ -60,6 +66,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         Route::get('/', [AdminBorrowController::class, 'index'])->name('index');
         Route::post('/{id}/approve', [AdminBorrowController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [AdminBorrowController::class, 'reject'])->name('reject');
+        Route::get('admin/returned-books', [ReturnedBooksController::class, 'index'])->name('admin.returnedBooks');
     });
 
 
@@ -71,12 +78,14 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         ->name('discussion_rooms.create');
     Route::post('/discussion_rooms', [AdminDiscussionRoomController::class, 'store'])
         ->name('discussion_rooms.store');
-    Route::patch('/discussion-rooms/{room}/status', [AdminDiscussionRoomController::class, 'updateStatus'])
+    Route::patch('/discussion-rooms/{room}/room-status', [AdminDiscussionRoomController::class, 'updateRoomStatus'])
         ->name('discussion_rooms.update-status');
-    Route::patch('/discussion-rooms/reservations/{reservation}/status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
-        ->name('discussion_rooms.update-status');
+    Route::patch('/discussion-rooms/reservations/{reservation}/reservation-status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
+        ->name('discussion_rooms.reservation-status');
     Route::get('/discussion_rooms/expired', [AdminDiscussionRoomController::class, 'expired'])
         ->name('discussion_rooms.expired');
+    Route::post('/discussion-rooms/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
+        ->name('discussion_rooms.end-session');
 
     // PC Room admin routes
     Route::prefix('pc-room')->name('pc-room.')->group(function () {
@@ -113,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/borrowed_books', [BookController::class, 'borrowedBooks'])->name('borrowed.books');
     Route::post('/books/return/{borrowId}', [BookController::class, 'returnBook'])->name('books.return');
     Route::get('/books/category/{category}', [BookController::class, 'booksByCategory'])->name('books.category')->where('category', '[0-9]+');
+    Route::get('/books/history', [BookController::class, 'borrowingHistory'])->name('books.history');
 
     // Lost items routes
     Route::get('/lost-items', [LostItemController::class, 'index'])->name('lost_items.index');
@@ -133,6 +143,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('reservations.create');
     Route::post('/reservations', [DiscussionRoomController::class, 'store'])
         ->name('reservations.store');
+    Route::post('/reservations/check-availability', [DiscussionRoomController::class, 'checkRoomAvailability'])
+        ->name('reservations.check-availability');
 });
 
 // Include auth.php routes (which handle login/registration)

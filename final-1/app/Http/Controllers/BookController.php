@@ -20,7 +20,9 @@ class BookController extends Controller
         // Fetch borrowed books for the authenticated user - only non-returned books
         $borrowedBooks = Borrow::where('user_id', Auth::id())
             ->whereNull('returned_at') // This ensures only currently borrowed books are shown
-            ->with('book')
+            ->with(['book' => function ($query) {
+                $query->with('categories');
+            }])
             ->latest('borrow_date') // Order by most recent borrow
             ->limit(2)
             ->get();
@@ -73,7 +75,7 @@ class BookController extends Controller
         $books = Book::where(function ($q) use ($query) {
             $q->where('title', 'LIKE', "%{$query}%")
                 ->orWhere('author', 'LIKE', "%{$query}%");
-        })->with('category')->get();
+        })->with('categories')->get();
 
         return view('books.search', compact('books'));
     }
@@ -123,6 +125,39 @@ class BookController extends Controller
         }
     }
 
+    // Users history of borrowed books
+    public function borrowingHistory(Request $request)
+    {
+        $query = Borrow::where('user_id', Auth::id())
+            ->with('book');
+
+        // Handle status filter
+        switch ($request->get('status')) {
+            case 'current':
+                $query->whereNull('returned_at')
+                    ->where('status', 'approved');
+                break;
+            case 'returned':
+                $query->whereNotNull('returned_at');
+                break;
+        }
+
+        // Handle sorting
+        switch ($request->get('sort')) {
+            case 'oldest':
+                $query->oldest('created_at');
+                break;
+            default: // newest
+                $query->latest('created_at');
+                break;
+        }
+
+        $borrowHistory = $query->paginate(10)
+            ->withQueryString();
+
+        return view('books.history', compact('borrowHistory'));
+    }
+
     // Borrowing and Reservation Logic that shows in user  dashboard
 
     public function borrowedBooks()
@@ -130,7 +165,9 @@ class BookController extends Controller
         // Fetch all borrowed books for the authenticated user
         $borrowedBooks = Borrow::where('user_id', Auth::id())
             ->whereNull('returned_at') // Only show books not yet returned
-            ->with('book') // Include book details for easy access
+            ->with(['book' => function ($query) {
+                $query->with('categories'); // Explicitly load categories
+            }])                             // Include book details for easy access
             ->latest('borrow_date')
             ->get();
         return view('borrowed_books', compact('borrowedBooks'));
@@ -152,7 +189,7 @@ class BookController extends Controller
         $categories = Category::has('books')
             ->withCount('books')
             ->get();
-        $books = Book::with('category')
+        $books = Book::with('categories')
             ->where('quantity', '>', 0)
             ->get();
         return view('books.index', compact('books', 'categories'));

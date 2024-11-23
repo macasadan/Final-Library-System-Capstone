@@ -1,6 +1,4 @@
-<!-- resources/views/reservations/index.blade.php -->
 @extends('layouts.app')
-
 @section('content')
 <div class="py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,7 +9,6 @@
             </h1>
             <p class="mt-2 text-gray-600">Manage your discussion room reservations</p>
         </div>
-
         <!-- Action Button -->
         <div class="mb-6">
             <a href="{{ route('reservations.create') }}"
@@ -21,6 +18,28 @@
                 </svg>
                 New Reservation
             </a>
+        </div>
+
+        <!-- Available Rooms -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Available Rooms</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach($rooms as $room)
+                    <div class="border rounded-lg p-4">
+                        <h3 class="font-semibold text-lg">{{ $room->name }}</h3>
+                        <div class="mt-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $room->getStatusColorClass() }}">
+                                {{ $room->getStatusLabel() }}
+                            </span>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600">
+                            Capacity: {{ $room->capacity }} people
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
         </div>
 
         <!-- Reservations List -->
@@ -53,10 +72,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-3 py-1 rounded-full text-xs font-medium
-                                        @if($reservation->status === 'approved') bg-green-100 text-green-800
-                                        @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
-                                        @else bg-yellow-100 text-yellow-800
-                                        @endif">
+                                    @if($reservation->status === 'approved') bg-green-100 text-green-800
+                                    @elseif($reservation->status === 'rejected') bg-red-100 text-red-800
+                                    @else bg-yellow-100 text-yellow-800
+                                    @endif">
                                         {{ ucfirst($reservation->status) }}
                                     </span>
                                 </td>

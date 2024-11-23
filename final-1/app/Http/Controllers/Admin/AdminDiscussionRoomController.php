@@ -44,8 +44,15 @@ class AdminDiscussionRoomController extends Controller
             ->where('end_time', '<', now())
             ->count();
 
-        // Pass all data to the view
-        return view('admin.discussion_rooms.index', compact('rooms', 'pendingReservations', 'expiredReservations'));
+        // Create dropdown for admin if needed
+        $roomDropdown = $rooms->pluck('name', 'id');
+
+        return view('admin.discussion_rooms.index', compact(
+            'rooms',
+            'pendingReservations',
+            'expiredReservations',
+            'roomDropdown'
+        ));
     }
 
 
@@ -110,12 +117,14 @@ class AdminDiscussionRoomController extends Controller
                             ->orWhereBetween('end_time', [$reservation->start_time, $reservation->end_time]);
                     })->exists();
 
-                if ($conflictingReservations) {
-                    // If conflicts exist, mark as rejected and return with error
-                    $reservation->update(['status' => 'rejected']);
-                    return redirect()->route('admin.discussion_rooms.index')
-                        ->with('error', 'Could not approve reservation due to time slot conflict.');
+                // If conflicts exist, mark as rejected and return with error
+                if ($conflictingReservations && $request->status === 'approved') {
+                    return back()->with('error', 'Cannot approve reservation due to time slot conflict.');
                 }
+
+                $reservation->update(['status' => $request->status]);
+
+                return back()->with('success', 'Reservation status updated successfully.');
 
                 // Log the approval
                 Log::info("Reservation {$reservation->id} approved for room {$reservation->discussion_room_id}");
@@ -132,6 +141,31 @@ class AdminDiscussionRoomController extends Controller
             Log::error("Error updating reservation status: " . $e->getMessage());
             return redirect()->route('admin.discussion_rooms.index')
                 ->with('error', 'An error occurred while processing the reservation.');
+        }
+    }
+
+    public function updateRoomStatus(Request $request, DiscussionRoom $room)
+    {
+        $request->validate([
+            'status' => 'required|in:available,maintenance'
+        ]);
+
+        $room->update(['status' => $request->status]);
+
+        return back()->with('success', 'Room status updated successfully.');
+    }
+
+    // Add new method to end session
+    public function endSession(DiscussionRoom $room)
+    {
+        try {
+            if ($room->endCurrentSession()) {
+                return redirect()->back()->with('success', 'Room session ended successfully.');
+            }
+            return redirect()->back()->with('error', 'No active session to end.');
+        } catch (\Exception $e) {
+            Log::error("Error ending room session: " . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while ending the session.');
         }
     }
 

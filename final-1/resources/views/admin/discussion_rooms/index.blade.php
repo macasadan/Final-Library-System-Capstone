@@ -1,8 +1,6 @@
 @extends('layouts.admin')
-
 @section('title', 'Discussion Room Management')
 @section('header', 'Discussion Room Management')
-
 @section('content')
 <div class="space-y-6">
     <!-- Pending Reservations Section -->
@@ -14,7 +12,6 @@
                 View Expired Reservations ({{ $expiredReservations }})
             </a>
         </div>
-
         <div class="mb-8">
             <h3 class="text-xl font-semibold mb-4 text-gray-700">Pending Reservations</h3>
             @if($pendingReservations->count() > 0)
@@ -40,22 +37,20 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $reservation->purpose }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
-                                    <form action="{{ route('admin.discussion_rooms.update-status', $reservation) }}" method="POST">
+                                    <form action="{{ route('admin.discussion_rooms.reservation-status', $reservation) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="approved">
-                                        <button type="submit"
-                                            class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                                        <button type="submit" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
                                             Approve
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('admin.discussion_rooms.update-status', $reservation) }}" method="POST">
+                                    <form action="{{ route('admin.discussion_rooms.reservation-status', $reservation) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="rejected">
-                                        <button type="submit"
-                                            class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                                        <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
                                             Reject
                                         </button>
                                     </form>
@@ -72,75 +67,100 @@
         </div>
 
         <!-- Discussion Rooms List -->
-        <div class="mt-8">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold text-gray-700">Discussion Rooms</h3>
-                <a href="{{ route('admin.discussion_rooms.create') }}"
-                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                    Add New Room
-                </a>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                @if(!empty($roomDropdown))
+                <div class="mb-4">
+                    <label for="admin_room_select" class="block text-sm font-medium text-gray-700">
+                        Select Discussion Room
+                    </label>
+                    <select
+                        id="admin_room_select"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                        <option value="">All Rooms</option>
+                        @foreach($roomDropdown as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                @foreach($rooms as $room)
-                <div class="border rounded-lg p-4 bg-white shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-800">{{ $room->name }}</h4>
-                            <p class="text-gray-600">Capacity: {{ $room->capacity }} people</p>
-                        </div>
-                        <div>
-                            <span class="px-3 py-1 rounded-full text-sm font-medium {{ $room->getStatusColorClass() }}">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($rooms as $room)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ $room->name }}</div>
+                            <div class="text-sm text-gray-500">Capacity: {{ $room->capacity }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium {{ $room->getStatusColorClass() }}">
                                 {{ $room->getStatusLabel() }}
                             </span>
-                        </div>
-                    </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                @if($room->availability_status === 'occupied')
+                                <form action="{{ route('admin.discussion_rooms.room-status', $room) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="{{ $room->status === 'available' ? 'maintenance' : 'available' }}">
+                                    <button type="submit" class="inline-flex items-center px-3 py-1 rounded-md text-white 
+                                        {{ $room->status === 'available' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }}">
+                                        {{ $room->status === 'available' ? 'Set Maintenance' : 'Set Available' }}
+                                    </button>
+                                </form>
+                                @endif
+                                <form action="{{ route('admin.discussion_rooms.update-status', $room) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="{{ $room->status === 'available' ? 'maintenance' : 'available' }}">
+                                    <button type="submit"
+                                        class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white {{ $room->status === 'available' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        {{ $room->status === 'available' ? 'Set Maintenance' : 'Set Available' }}
+                                    </button>
+                                </form>
+                                @if($room->availability_status === 'occupied')
+                                <form action="{{ route('admin.discussion_rooms.end-session', $room) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                        End Session
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
 
-                    @if($room->availability_status === 'occupied')
-                    @php
-                    $currentReservation = $room->getCurrentReservation();
-                    @endphp
-                    @if($currentReservation)
-                    <div class="mt-3 p-3 bg-gray-50 rounded-md">
-                        <p class="text-sm text-gray-600">
-                            <span class="font-medium">Current Session:</span><br>
-                            Ends at: {{ $currentReservation->end_time->format('h:i A') }}<br>
-                            Purpose: {{ Str::limit($currentReservation->purpose, 50) }}
-                        </p>
-                    </div>
-                    @endif
-                    @endif
-
-                    @if($room->status === 'maintenance')
-                    <div class="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
-                        <p class="text-sm text-yellow-800">
-                            This room is currently under maintenance
-                        </p>
-                    </div>
-                    @endif
-
-                    @if(auth()->user()->isAdmin)
-                    <div class="mt-3">
-                        <form action="{{ route('admin.discussion_rooms.update-status', $room) }}" method="POST" class="inline">
-                            @csrf
-                            @method('PATCH')
-                            <select name="status"
-                                onchange="this.form.submit()"
-                                class="text-sm rounded border-gray-300 focus:border-blue-300 focus:ring focus:ring-blue-200">
-                                <option value="available" {{ $room->status === 'available' ? 'selected' : '' }}>
-                                    Set Available
-                                </option>
-                                <option value="maintenance" {{ $room->status === 'maintenance' ? 'selected' : '' }}>
-                                    Set Maintenance
-                                </option>
-                            </select>
-                        </form>
-                    </div>
-                    @endif
-                </div>
-                @endforeach
-            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roomSelect = document.getElementById('admin_room_select');
+        const tableRows = document.querySelectorAll('tbody tr');
+
+        roomSelect.addEventListener('change', function() {
+            const selectedRoomId = this.value;
+
+            tableRows.forEach(row => {
+                if (selectedRoomId === '' || row.getAttribute('data-room-id') === selectedRoomId) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>

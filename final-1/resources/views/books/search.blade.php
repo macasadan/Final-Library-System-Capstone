@@ -62,13 +62,16 @@
                             <span class="font-medium">Author:</span>
                             {{ $book->author }}
                         </p>
-                        @if($book->category)
+                        @if($book->categories->isNotEmpty())
                         <p class="flex items-center gap-2">
-                            <span class="font-medium">Category:</span>
-                            <a href="{{ route('books.category', ['category' => $book->category->id]) }}"
+                            <span class="font-medium">Categories:</span>
+                            @foreach($book->categories as $category)
+                            <a href="{{ route('books.category', ['category' => $category->id]) }}"
                                 class="text-blue-600 hover:underline">
-                                {{ $book->category->name }}
+                                {{ $category->name }}
                             </a>
+                            @if(!$loop->last), @endif
+                            @endforeach
                         </p>
                         @endif
                         <p class="flex items-center gap-2">

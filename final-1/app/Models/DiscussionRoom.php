@@ -12,7 +12,7 @@ class DiscussionRoom extends Model
 
     protected $fillable = ['name', 'capacity', 'status'];
 
-    protected $appends = ['availability_status'];
+    protected $appends = ['availability_status',  'occupied_until'];
 
     // Define the possible status values
     const STATUS_AVAILABLE = 'available';
@@ -73,11 +73,39 @@ class DiscussionRoom extends Model
             case 'available':
                 return 'Available';
             case 'occupied':
-                return 'In Use';
+                $currentReservation = $this->getCurrentReservation();
+                return $currentReservation
+                    ? 'Occupied until ' . $currentReservation->end_time->format('H:i')
+                    : 'Occupied';
             case 'maintenance':
                 return 'Under Maintenance';
             default:
                 return ucfirst($this->availability_status);
         }
+    }
+
+    public function getOccupiedUntilAttribute()
+    {
+        if ($this->availability_status === 'occupied') {
+            $currentReservation = $this->getCurrentReservation();
+            return $currentReservation ? $currentReservation->end_time : null;
+        }
+        return null;
+    }
+
+    public function endCurrentSession()
+    {
+        $currentReservation = $this->getCurrentReservation();
+        if ($currentReservation) {
+            $currentReservation->end_time = now();
+            $currentReservation->save();
+            return true;
+        }
+        return false;
+    }
+    public function isActive()
+    {
+        return $this->status === 'approved' &&
+            now()->between($this->start_time, $this->end_time);
     }
 }

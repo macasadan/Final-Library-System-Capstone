@@ -22,13 +22,18 @@ class DiscussionRoomController extends Controller
             ->latest()
             ->get();
 
-        return view('reservations.index', compact('rooms', 'userReservations'));
+        // Add a dropdown list of rooms
+        $availableRooms = $rooms->where('status', 'available');
+        $roomDropdown = $rooms->pluck('name', 'id');
+
+        return view('reservations.index', compact('rooms', 'userReservations', 'roomDropdown'));
     }
 
     public function create()
     {
-        $rooms = DiscussionRoom::all();
-        return view('reservations.create', compact('rooms'));
+        $rooms = DiscussionRoom::where('status', 'available')->get();
+        $roomDropdown = $rooms->pluck('name', 'id');
+        return view('reservations.create', compact('roomDropdown'));
     }
 
     public function store(Request $request)
@@ -76,16 +81,35 @@ class DiscussionRoomController extends Controller
         return redirect()->route('reservations.index')->with('success', 'Reservation request submitted successfully.');
     }
 
-    public function updateStatus($id, Request $request)
+    // New method for checking room availability in real-time
+    public function checkRoomAvailability(Request $request)
     {
-        // Fetch the discussion room by ID
-        $room = DiscussionRoom::findOrFail($id);
+        $roomId = $request->input('room_id');
+        $startTime = $request->input('start_time');
+        $endTime = $request->input('end_time');
 
-        // Update the status with the requested status (e.g., active, inactive)
-        $room->status = $request->input('status');
-        $room->save();
+        $conflicting = DiscussionRoomReservation::where('discussion_room_id', $roomId)
+            ->where('status', 'approved')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->whereBetween('start_time', [$startTime, $endTime])
+                    ->orWhereBetween('end_time', [$startTime, $endTime]);
+            })->exists();
 
-        // Redirect back with a success message
-        return redirect()->route('admin.dashboard')->with('success', 'Room status updated successfully.');
+        return response()->json([
+            'is_available' => !$conflicting
+        ]);
+    }
+
+    // New method for manual session end
+    public function endSession(DiscussionRoomReservation $reservation)
+    {
+        if ($reservation->user_id !== Auth::id()) {
+            return back()->with('error', 'Unauthorized action.');
+        }
+
+        $reservation->end_time = now();
+        $reservation->save();
+
+        return back()->with('success', 'Session ended successfully.');
     }
 }
