@@ -28,20 +28,37 @@
                         <!-- Book Details -->
                         <div class="flex flex-col gap-2">
                             <h3 class="text-xl font-semibold text-gray-900">{{ $borrow->book->title }}</h3>
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                 <div>
                                     <span class="text-sm font-medium text-gray-500">Author</span>
                                     <p class="mt-1 text-gray-900">{{ $borrow->book->author }}</p>
                                 </div>
                                 <div>
                                     @if($borrow->book->categories->isNotEmpty())
-                                    <p>Categories:
+                                    <span class="text-sm font-medium text-gray-500">Categories</span>
+                                    <p class="mt-1 text-gray-900">
                                         @foreach($borrow->book->categories as $category)
                                         {{ $category->name }}{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </p>
                                     @endif
                                 </div>
+
+                                <!-- Student Information -->
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500">Student ID</span>
+                                    <p class="mt-1 text-gray-900">{{ $borrow->id_number }}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500">Course</span>
+                                    <p class="mt-1 text-gray-900">{{ $borrow->course }}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500">Department</span>
+                                    <p class="mt-1 text-gray-900">{{ $borrow->department }}</p>
+                                </div>
+
+                                <!-- Borrowing Dates -->
                                 <div>
                                     <span class="text-sm font-medium text-gray-500">Borrowed Date</span>
                                     <p class="mt-1 text-gray-900">

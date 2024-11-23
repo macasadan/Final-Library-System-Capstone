@@ -110,7 +110,8 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-700">{{ Auth::user()->name }}</p>
+
+                            <a href="{{ route('profile.edit') }}" class="text-sm text-gray-500 hover:text-red-600">{{ Auth::user()->name }}</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="text-sm text-gray-500 hover:text-red-600">Logout</button>

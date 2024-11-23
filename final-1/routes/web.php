@@ -13,10 +13,19 @@ use App\Http\Controllers\Admin\AdminLostItemController;
 use App\Http\Controllers\Admin\AdminPCRoomController;
 use App\Http\Controllers\Admin\AdminDiscussionRoomController;
 use App\Http\Controllers\Admin\AdminBorrowController;
+use App\Http\Controllers\Admin\ReturnedBooksController;
 
 // Public Routes
 Route::get('/', function () {
     return view('welcome');
+});
+
+// Profile Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Guest Routes (for non-authenticated users)
@@ -40,6 +49,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         Route::get('/', [AdminBorrowController::class, 'index'])->name('index');
         Route::post('/{id}/approve', [AdminBorrowController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [AdminBorrowController::class, 'reject'])->name('reject');
+        Route::get('admin/returned-books', [ReturnedBooksController::class, 'index'])->name('admin.returnedBooks');
     });
 
 
