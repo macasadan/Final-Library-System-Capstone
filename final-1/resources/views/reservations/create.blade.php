@@ -31,13 +31,13 @@
                     <div class="space-y-6">
                         <!-- Room Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1" for="room">
+                            <label for="discussion_room_id" class="block text-sm font-medium text-gray-700">
                                 Select Room
                             </label>
-                            <select name="discussion_room_id" id="room"
+                            <select name="discussion_room_id" id="discussion_room_id"
                                 class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 rounded-md">
-                                @foreach($rooms as $room)
-                                <option value="{{ $room->id }}">{{ $room->name }} (Capacity: {{ $room->capacity }})</option>
+                                @foreach($roomDropdown as $id => $name)
+                                <option value="{{ $id }}">{{ $name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -87,3 +87,46 @@
     </div>
 </div>
 @endsection
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const roomSelect = document.getElementById('discussion_room_id');
+        const startTimeInput = document.getElementById('start_time');
+        const endTimeInput = document.getElementById('end_time');
+        const availabilityMessage = document.createElement('div');
+        availabilityMessage.classList.add('text-sm', 'mt-1');
+        startTimeInput.parentNode.insertBefore(availabilityMessage, startTimeInput.nextSibling);
+
+        function checkRoomAvailability() {
+            const roomId = roomSelect.value;
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+
+            if (roomId && startTime && endTime) {
+                fetch('{{ route("reservations.check-availability") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            room_id: roomId,
+                            start_time: startTime,
+                            end_time: endTime
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        availabilityMessage.textContent = data.is_available ?
+                            'Room is available' :
+                            'Room is not available for selected time';
+                        availabilityMessage.classList.toggle('text-green-600', data.is_available);
+                        availabilityMessage.classList.toggle('text-red-600', !data.is_available);
+                    });
+            }
+        }
+
+        roomSelect.addEventListener('change', checkRoomAvailability);
+        startTimeInput.addEventListener('change', checkRoomAvailability);
+        endTimeInput.addEventListener('change', checkRoomAvailability);
+    });
+</script>

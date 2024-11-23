@@ -22,7 +22,9 @@ class DatabaseSeeder extends Seeder
 
         // call the CategorySeeder
         $this->call([
-            CategorySeeder::class
+            CategorySeeder::class,
+            AdminSeeder::class,
+            DiscussionRoomSeeder::class
         ]);
     }
 }

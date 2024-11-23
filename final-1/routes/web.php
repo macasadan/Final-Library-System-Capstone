@@ -51,12 +51,14 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         ->name('discussion_rooms.create');
     Route::post('/discussion_rooms', [AdminDiscussionRoomController::class, 'store'])
         ->name('discussion_rooms.store');
-    Route::patch('/discussion-rooms/{room}/status', [AdminDiscussionRoomController::class, 'updateStatus'])
+    Route::patch('/discussion-rooms/{room}/room-status', [AdminDiscussionRoomController::class, 'updateRoomStatus'])
         ->name('discussion_rooms.update-status');
-    Route::patch('/discussion-rooms/reservations/{reservation}/status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
-        ->name('discussion_rooms.update-status');
+    Route::patch('/discussion-rooms/reservations/{reservation}/reservation-status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
+        ->name('discussion_rooms.reservation-status');
     Route::get('/discussion_rooms/expired', [AdminDiscussionRoomController::class, 'expired'])
         ->name('discussion_rooms.expired');
+    Route::post('/discussion-rooms/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
+        ->name('discussion_rooms.end-session');
 
     // PC Room admin routes
     Route::prefix('pc-room')->name('pc-room.')->group(function () {
@@ -114,6 +116,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('reservations.create');
     Route::post('/reservations', [DiscussionRoomController::class, 'store'])
         ->name('reservations.store');
+    Route::post('/reservations/check-availability', [DiscussionRoomController::class, 'checkRoomAvailability'])
+        ->name('reservations.check-availability');
 });
 
 // Include auth.php routes (which handle login/registration)
