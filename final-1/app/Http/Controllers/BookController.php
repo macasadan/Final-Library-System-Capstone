@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Category;
+use Carbon\Carbon;
 
 class BookController extends Controller
 {
@@ -100,7 +101,7 @@ class BookController extends Controller
 
         try {
             // Reduce the quantity of the book
-            $book->decrement('quantity');
+
 
             // Create a borrow record
             $borrow = Borrow::create([
@@ -110,7 +111,7 @@ class BookController extends Controller
                 'course' => $request->course,
                 'department' => $request->department,
                 'borrow_date' => now(),
-                'due_date' => now()->addDays(1),
+                'due_date' => Carbon::now()->addDay(1),
                 'status' => Borrow::STATUS_PENDING
             ]);
 
