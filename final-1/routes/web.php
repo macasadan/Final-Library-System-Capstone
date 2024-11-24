@@ -49,6 +49,7 @@ Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')-
         ->name('lost-item-logs');
     Route::get('returned-book-logs', [SuperadminmainnaniController::class, 'returnedBookLogs'])
         ->name('returned-book-logs');
+        Route::get('/report-logs', [SuperadminmainnaniController::class, 'reportLogs'])->name('report-logs');
     // Book routes
     Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
     Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
@@ -91,6 +92,12 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         ->name('discussion_rooms.expired');
     Route::post('/discussion-rooms/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
         ->name('discussion_rooms.end-session');
+        Route::post('/admin/discussion-rooms/sessions/{session}/expire', [AdminDiscussionRoomController::class, 'expireSession'])
+    ->name('admin.discussion_rooms.expire-session');
+    Route::get('/discussion-rooms/active-sessions', [AdminDiscussionRoomController::class, 'getActiveSessions'])
+    ->name('discussion_rooms.active-sessions');
+Route::get('/discussion-rooms/check-expired', [AdminDiscussionRoomController::class, 'checkExpiredSessions'])
+    ->name('discussion_rooms.check-expired');
 
     // PC Room admin routes
     Route::prefix('pc-room')->name('pc-room.')->group(function () {

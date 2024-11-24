@@ -108,4 +108,37 @@ class SuperadminmainnaniController extends Controller
 
         return view('super-admin.returned-book-logs', compact('returnedBooks'));
     }
+    
+public function reportLogs(Request $request)
+{
+    $query = Borrow::with(['user', 'book'])
+        ->where('status', 'approved');
+
+    // Handle status filter
+    if ($request->filled('status')) {
+        if ($request->status === 'approved') {
+            $query->whereNull('returned_at');
+        } elseif ($request->status === 'returned') {
+            $query->whereNotNull('returned_at');
+        }
+    }
+
+    // Handle search
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('book', function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%");
+            })->orWhereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhere('id_number', 'like', "%{$search}%");
+        });
+    }
+
+    $allBorrows = $query->latest('borrow_date')
+        ->paginate(10)
+        ->appends(request()->query());
+
+    return view('super-admin.report-logs', compact('allBorrows'));
+}
 }
