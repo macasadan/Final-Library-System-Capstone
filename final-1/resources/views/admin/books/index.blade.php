@@ -21,6 +21,8 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Published Year</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -31,6 +33,8 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $book->title }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $book->author }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $book->published_year }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $book->categories->pluck('name')->implode(', ') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $book->quantity }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a href="{{ route('admin.books.edit', $book->id) }}"
                             class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
