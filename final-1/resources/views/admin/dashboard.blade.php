@@ -26,7 +26,7 @@
                     <span class="ml-2 bg-white text-yellow-600 px-2 rounded-full">{{ $pendingCount }}</span>
                     @endif
                 </a>
-                <a href="{{ route('admin.borrows.index') }}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                <a href="{{ route('admin.borrows.borrowed') }}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                     All Borrowed Books
                 </a>
             </div>

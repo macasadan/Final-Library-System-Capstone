@@ -25,9 +25,15 @@ class Borrow extends Model
         'returned_at'
     ];
 
+    protected $casts = [
+        'borrow_date' => 'datetime',
+        'due_date' => 'datetime',
+        'returned_at' => 'datetime',
+    ];
+
+
 
     // Relationships
-
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';

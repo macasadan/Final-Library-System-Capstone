@@ -3,15 +3,23 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">All Borrowed Books bushit</h2>
+        <h2 class="text-2xl font-bold text-gray-800">All Borrowed Books and Students</h2>
         <div class="flex space-x-4">
-            <select id="statusFilter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200">
-                <option value="">All Status</option>
-                <option value="approved">Approved</option>
-                <option value="returned">Returned</option>
-            </select>
-            <input type="text" id="search" placeholder="Search by title or student name"
-                class="rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200">
+            <form class="flex space-x-2" action="{{ route('admin.borrows.borrowed') }}" method="GET">
+                <select name="status" class="rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200">
+                    <option value="">All Status</option>
+                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Currently Borrowed</option>
+                    <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>Returned</option>
+                </select>
+                <input type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Search by title or student name"
+                    class="rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                    Search
+                </button>
+            </form>
         </div>
     </div>
 
@@ -27,8 +35,7 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @foreach($allBorrows as $borrow)
-                @if($borrow->status === 'approved' || $borrow->status === 'returned')
+                @forelse($allBorrows as $borrow)
                 <tr>
                     <td class="px-6 py-4">
                         <div class="text-sm font-medium text-gray-900">{{ $borrow->book->title }}</div>
@@ -37,10 +44,11 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                        @if($borrow->status === 'approved') bg-green-100 text-green-800
-                        @else bg-gray-100 text-gray-800 @endif">
-                            {{ ucfirst($borrow->status) }}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {{ $borrow->returned_at 
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'bg-green-100 text-green-800' }}">
+                            {{ $borrow->returned_at ? 'Returned' : 'Currently Borrowed' }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -53,8 +61,13 @@
                         {{ $borrow->returned_at ? $borrow->returned_at->format('M d, Y') : '-' }}
                     </td>
                 </tr>
-                @endif
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        No borrowed books found.
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
         <div class="px-6 py-4">
@@ -62,17 +75,15 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
-    // Add event listeners for filtering and search
+    // Handle status filter changes
     document.getElementById('statusFilter').addEventListener('change', function() {
-        // Implement status filtering
-    });
-
-    document.getElementById('search').addEventListener('input', function() {
-        // Implement search functionality
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('status', this.value);
+        window.location.href = currentUrl.toString();
     });
 </script>
 @endpush
-@endsection

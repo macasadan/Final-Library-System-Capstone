@@ -16,7 +16,7 @@ use App\Http\Controllers\Admin\AdminDiscussionRoomController;
 use App\Http\Controllers\Admin\AdminBorrowController;
 use App\Http\Controllers\SuperAdmin\SuperAdminBookController;
 use App\Http\Controllers\SuperAdmin\SuperadminmainnaniController;
-use App\Http\Controllers\Admin\ReturnedBooksController;
+
 
 // Public Routes
 Route::get('/', function () {
@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware('guest')->group(function () {
     // The reCAPTCHA validation will work through auth.php routes
 });
+
 // Super Admin Routes
 Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')->name('super-admin.')->group(function () {
     Route::get('/dashboard', [SuperadminmainnaniController::class, 'dashboard'])->name('dashboard');
@@ -52,6 +53,7 @@ Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')-
     Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
     Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
 });
+
 // Admin Routes
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
 
@@ -69,7 +71,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
         Route::get('/', [AdminBorrowController::class, 'index'])->name('index');
         Route::post('/{id}/approve', [AdminBorrowController::class, 'approve'])->name('approve');
         Route::post('/{id}/reject', [AdminBorrowController::class, 'reject'])->name('reject');
-        Route::get('admin/returned-books', [ReturnedBooksController::class, 'index'])->name('admin.returnedBooks');
+        Route::get('/borrowed', [AdminBorrowController::class, 'borrowedBooks'])->name('borrowed');
     });
 
 

@@ -30,8 +30,8 @@
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.borrows.pending') ? 'bg-blue-700' : '' }}">
                     Pending Borrows
                 </a>
-                <a href="{{ route('admin.borrows.index') }}"
-                    class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.borrows.index') ? 'bg-blue-700' : '' }}">
+                <a href="{{ route('admin.borrows.borrowed') }}"
+                    class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.borrows.borrowed') ? 'bg-blue-700' : '' }}">
                     Borrowed Books
                 </a>
                 <a href="{{ route('admin.returnedBooks') }}"

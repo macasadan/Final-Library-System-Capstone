@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Borrow;
 use App\Models\Book;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AdminBorrowController extends Controller
 {
@@ -80,5 +82,41 @@ class AdminBorrowController extends Controller
         ]);
 
         return back()->with('success', 'Borrowing request rejected successfully.');
+    }
+
+    public function borrowedBooks(Request $request)
+    {
+        Log::info('Borrowed Books page accessed');
+
+        $query = Borrow::with(['user', 'book'])
+            ->where('status', 'approved');
+
+        // Handle status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'approved') {
+                $query->whereNull('returned_at');
+            } elseif ($request->status === 'returned') {
+                $query->where('status', 'approved')
+                    ->whereNotNull('returned_at');
+            }
+        }
+
+        // Handle search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('book', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                })->orWhereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%");
+                })->orWhere('id_number', 'like', "%{$search}%");
+            });
+        }
+
+        $allBorrows = $query->latest('borrow_date')
+            ->paginate(10)
+            ->appends(request()->query());
+
+        return view('admin.borrows.borrowed', compact('allBorrows'));
     }
 }
