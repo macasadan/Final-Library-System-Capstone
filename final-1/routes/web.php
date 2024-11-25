@@ -76,29 +76,29 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     });
 
 
-
-    // Discussion room routes
-    Route::get('/discussion_rooms', [AdminDiscussionRoomController::class, 'index'])
-        ->name('discussion_rooms.index');
-    Route::get('/discussion_rooms/create', [AdminDiscussionRoomController::class, 'create'])
-        ->name('discussion_rooms.create');
-    Route::post('/discussion_rooms', [AdminDiscussionRoomController::class, 'store'])
-        ->name('discussion_rooms.store');
-    Route::patch('/discussion-rooms/{room}/room-status', [AdminDiscussionRoomController::class, 'updateRoomStatus'])
-        ->name('discussion_rooms.update-status');
-    Route::patch('/discussion-rooms/reservations/{reservation}/reservation-status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
-        ->name('discussion_rooms.reservation-status');
-    Route::get('/discussion_rooms/expired', [AdminDiscussionRoomController::class, 'expired'])
-        ->name('discussion_rooms.expired');
-    Route::post('/discussion-rooms/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
-        ->name('discussion_rooms.end-session');
-        Route::post('/admin/discussion-rooms/sessions/{session}/expire', [AdminDiscussionRoomController::class, 'expireSession'])
-    ->name('admin.discussion_rooms.expire-session');
-    Route::get('/discussion-rooms/active-sessions', [AdminDiscussionRoomController::class, 'getActiveSessions'])
-    ->name('discussion_rooms.active-sessions');
-Route::get('/discussion-rooms/check-expired', [AdminDiscussionRoomController::class, 'checkExpiredSessions'])
-    ->name('discussion_rooms.check-expired');
-
+    Route::prefix('discussion-rooms')->name('discussion_rooms.')->group(function () {
+        Route::get('/', [AdminDiscussionRoomController::class, 'index'])
+            ->name('index');
+        Route::get('/create', [AdminDiscussionRoomController::class, 'create'])
+            ->name('create');
+        Route::post('/', [AdminDiscussionRoomController::class, 'store'])
+            ->name('store');
+        Route::patch('/{room}/room-status', [AdminDiscussionRoomController::class, 'updateRoomStatus'])
+            ->name('update-status');
+        Route::patch('/reservations/{reservation}/reservation-status', [AdminDiscussionRoomController::class, 'updateReservationStatus'])
+            ->name('reservation-status');
+        Route::get('/expired', [AdminDiscussionRoomController::class, 'expired'])
+            ->name('expired');
+        Route::post('/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
+            ->name('end-session');
+        Route::get('/active-sessions', [AdminDiscussionRoomController::class, 'getActiveSessions'])
+            ->name('active-sessions');
+        Route::get('/check-expired', [AdminDiscussionRoomController::class, 'checkExpiredSessions'])
+            ->name('check-expired');
+        Route::get('/history', [AdminDiscussionRoomController::class, 'history'])
+            ->name('history');
+            
+    });
     // PC Room admin routes
     Route::prefix('pc-room')->name('pc-room.')->group(function () {
         Route::get('/dashboard', [AdminPcRoomController::class, 'dashboard'])->name('dashboard');
@@ -157,6 +157,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('reservations.store');
     Route::post('/reservations/check-availability', [DiscussionRoomController::class, 'checkRoomAvailability'])
         ->name('reservations.check-availability');
+        Route::patch('/reservations/{reservation}/end-session', [DiscussionRoomController::class, 'endSession'])
+    ->name('reservations.end-session');
 });
 
 // Include auth.php routes (which handle login/registration)

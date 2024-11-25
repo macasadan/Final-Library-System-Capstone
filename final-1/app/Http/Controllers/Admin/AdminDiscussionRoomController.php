@@ -180,4 +180,20 @@ class AdminDiscussionRoomController extends Controller
 
         return view('admin.discussion_rooms.expired', compact('expiredReservations'));
     }
+    public function history()
+{
+    $reservations = DiscussionRoomReservation::with(['user', 'discussionRoom'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(15); // Paginate results for better performance
+
+    // Get statistics for the dashboard
+    $stats = [
+        'total_reservations' => DiscussionRoomReservation::count(),
+        'approved_count' => DiscussionRoomReservation::where('status', 'approved')->count(),
+        'rejected_count' => DiscussionRoomReservation::where('status', 'rejected')->count(),
+        'pending_count' => DiscussionRoomReservation::where('status', 'pending')->count(),
+    ];
+
+    return view('admin.discussion_rooms.history', compact('reservations', 'stats'));
+}
 }

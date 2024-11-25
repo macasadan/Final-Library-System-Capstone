@@ -38,10 +38,15 @@
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.returnedBooks') ? 'bg-blue-700' : '' }}">
                     Returned Books
                 </a>
+           
                 <a href="{{ route('admin.discussion_rooms.index') }}"
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.discussion_rooms.index') ? 'bg-blue-700' : '' }}">
                     Discussion Rooms
                 </a>
+                <a href="{{ route('admin.discussion_rooms.history') }}"
+                class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.discussion_rooms.history') ? 'bg-blue-700' : '' }}">
+                Reservation history
+</a>
                 <a href="{{ route('admin.discussion_rooms.expired') }}"
                     class="block py-3 px-6 hover:bg-blue-700 {{ request()->routeIs('admin.discussion_rooms.expired') ? 'bg-blue-700' : '' }}">
                     Reservations

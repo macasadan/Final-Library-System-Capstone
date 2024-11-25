@@ -12,22 +12,83 @@ class DiscussionRoomController extends Controller
 {
     public function index()
     {
-        // Get all available discussion rooms
-        $rooms = DiscussionRoom::all();
+        $now = now();
+        
+        // Get all rooms with their current active reservations
+        $rooms = DiscussionRoom::with(['reservations' => function ($query) use ($now) {
+            $query->where('status', 'approved')
+                ->where(function ($q) use ($now) {
+                    $q->where('start_time', '<=', $now)
+                      ->where('end_time', '>', $now);
+                })
+                ->with('user');
+        }])->get();
 
-        // Get the reservations for the current logged-in user
+        // Transform the rooms to include current reservation information
+        $rooms = $rooms->map(function ($room) use ($now) {
+            // Get current active reservation
+            $currentReservation = $room->reservations->first();
+            
+            // Get upcoming reservations for today, excluding expired ones
+            $upcomingReservations = DiscussionRoomReservation::where('discussion_room_id', $room->id)
+                ->where('status', 'approved')
+                ->where('start_time', '>', $now)
+                ->where('end_time', '>', $now) // Ensure end time is also in the future
+                ->where('start_time', '<', $now->copy()->endOfDay())
+                ->orderBy('start_time')
+                ->with('user')
+                ->get();
+
+            // Check if there's a current reservation
+            $activeReservation = DiscussionRoomReservation::where('discussion_room_id', $room->id)
+                ->where('status', 'approved')
+                ->where('start_time', '<=', $now)
+                ->where('end_time', '>', $now)
+                ->with('user')
+                ->first();
+
+            $room->current_reservation = $activeReservation;
+            $room->upcoming_reservations = $upcomingReservations;
+            
+            // Update occupied status based on current reservation or upcoming reservations
+            $room->is_occupied = $activeReservation !== null || $upcomingReservations->isNotEmpty();
+            
+            // Set availability status
+            if ($activeReservation) {
+                $room->availability_status = 'occupied';
+            } elseif ($upcomingReservations->isNotEmpty()) {
+                $room->availability_status = 'reserved';
+            } else {
+                $room->availability_status = 'available';
+            }
+            
+            return $room;
+        });
+
+        // Get the non-expired reservations for the current logged-in user
         $userId = Auth::id();
         $userReservations = DiscussionRoomReservation::where('user_id', $userId)
+            ->where(function ($query) use ($now) {
+                $query->where('end_time', '>', $now)
+                    ->orWhere('status', 'pending');
+            })
             ->with('discussionRoom')
             ->latest()
             ->get();
 
-        // Add a dropdown list of rooms
-        $availableRooms = $rooms->where('status', 'available');
         $roomDropdown = $rooms->pluck('name', 'id');
 
         return view('reservations.index', compact('rooms', 'userReservations', 'roomDropdown'));
     }
+
+
+   private function cleanupExpiredReservations($roomId, $now)
+   {
+       DiscussionRoomReservation::where('discussion_room_id', $roomId)
+           ->where('status', 'approved')
+           ->where('end_time', '<=', $now)
+           ->update(['status' => 'completed']);
+   }
 
     public function create()
     {
