@@ -50,9 +50,13 @@ Route::middleware(['auth', SuperAdminMiddleware::class])->prefix('super-admin')-
     Route::get('returned-book-logs', [SuperadminmainnaniController::class, 'returnedBookLogs'])
         ->name('returned-book-logs');
         Route::get('/report-logs', [SuperadminmainnaniController::class, 'reportLogs'])->name('report-logs');
+        Route::get('/history', [SuperadminmainnaniController::class, 'discussionRoomHistory'])
+    ->name('history');
+
     // Book routes
     Route::get('/books', [SuperAdminBookController::class, 'index'])->name('books.index');
     Route::get('/books/{book}', [SuperAdminBookController::class, 'show'])->name('books.show');
+
 });
 
 // Admin Routes
@@ -149,16 +153,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Discussion Room routes
-    Route::get('/reservations', [DiscussionRoomController::class, 'index'])
-        ->name('reservations.index');
-    Route::get('/reservations/create', [DiscussionRoomController::class, 'create'])
-        ->name('reservations.create');
-    Route::post('/reservations', [DiscussionRoomController::class, 'store'])
-        ->name('reservations.store');
-    Route::post('/reservations/check-availability', [DiscussionRoomController::class, 'checkRoomAvailability'])
-        ->name('reservations.check-availability');
-        Route::patch('/reservations/{reservation}/end-session', [DiscussionRoomController::class, 'endSession'])
-    ->name('reservations.end-session');
+    Route::prefix('reservations')->name('reservations.')->group(function () {
+        Route::get('/', [DiscussionRoomController::class, 'index'])->name('index');
+        Route::get('/create', [DiscussionRoomController::class, 'create'])->name('create');
+        Route::post('/', [DiscussionRoomController::class, 'store'])->name('store');
+        Route::post('/check-availability', [DiscussionRoomController::class, 'checkRoomAvailability'])->name('check-availability');
+        Route::patch('/{reservations}', [DiscussionRoomController::class, 'update'])->name('update');
+    });
+    
 });
 
 // Include auth.php routes (which handle login/registration)

@@ -9,6 +9,7 @@ use App\Models\Borrow;
 use App\Models\PcSession;
 use App\Models\DiscussionRoom;
 use App\Models\LostItem;
+use App\Models\DiscussionRoomReservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -140,5 +141,60 @@ public function reportLogs(Request $request)
         ->appends(request()->query());
 
     return view('super-admin.report-logs', compact('allBorrows'));
+}
+public function discussionRoomHistory(Request $request)
+{
+    $query = DiscussionRoomReservation::with(['user', 'discussionRoom']);
+
+    // Validate and sanitize inputs
+    $validStatuses = ['approved', 'rejected', 'pending'];
+
+    // Status Filter with validation
+    if ($request->filled('status') && in_array($request->status, $validStatuses)) {
+        $query->where('status', $request->status);
+    }
+
+    // Search Filter with input sanitization
+    if ($request->filled('search')) {
+        $search = trim($request->search);
+        $query->where(function ($q) use ($search) {
+            $q->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })->orWhereHas('discussionRoom', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            })->orWhere('purpose', 'like', "%{$search}%"); // Added purpose search
+        });
+    }
+
+    // Additional optional date range filter
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        try {
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate = Carbon::parse($request->end_date)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        } catch (\Exception $e) {
+            // Log error, but don't break the query
+            Log::warning('Invalid date range in discussion room history filter', [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date
+            ]);
+        }
+    }
+
+    // Get paginated reservations
+    $reservations = $query->orderBy('created_at', 'desc')
+        ->paginate(15)
+        ->appends(request()->query());
+
+    // Get statistics for the dashboard
+    $stats = [
+        'total_reservations' => DiscussionRoomReservation::count(),
+        'approved_count' => DiscussionRoomReservation::where('status', 'approved')->count(),
+        'rejected_count' => DiscussionRoomReservation::where('status', 'rejected')->count(),
+        'pending_count' => DiscussionRoomReservation::where('status', 'pending')->count(),
+    ];
+
+    return view('super-admin.history', compact('reservations', 'stats'));
 }
 }

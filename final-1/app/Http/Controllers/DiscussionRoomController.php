@@ -13,6 +13,10 @@ class DiscussionRoomController extends Controller
     public function index()
     {
         $now = now();
+
+        DiscussionRoomReservation::where('status', 'approved')
+        ->where('end_time', '<=', $now)
+        ->update(['status' => 'completed']);
         
         // Get all rooms with their current active reservations
         $rooms = DiscussionRoom::with(['reservations' => function ($query) use ($now) {
@@ -31,14 +35,13 @@ class DiscussionRoomController extends Controller
             
             // Get upcoming reservations for today, excluding expired ones
             $upcomingReservations = DiscussionRoomReservation::where('discussion_room_id', $room->id)
-                ->where('status', 'approved')
-                ->where('start_time', '>', $now)
-                ->where('end_time', '>', $now) // Ensure end time is also in the future
-                ->where('start_time', '<', $now->copy()->endOfDay())
-                ->orderBy('start_time')
-                ->with('user')
-                ->get();
-
+    ->where('status', 'approved')
+    ->where('start_time', '>', $now) // Ensure start time is in the future
+    ->where('end_time', '>', $now)  // Ensure end time is also in the future
+    ->where('start_time', '<', $now->copy()->endOfDay())
+    ->orderBy('start_time')
+    ->with('user')
+    ->get();
             // Check if there's a current reservation
             $activeReservation = DiscussionRoomReservation::where('discussion_room_id', $room->id)
                 ->where('status', 'approved')

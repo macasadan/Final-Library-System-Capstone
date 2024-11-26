@@ -48,6 +48,10 @@
     class="block py-3 px-6 hover:bg-indigo-700 {{ request()->routeIs('super-admin.report-logs') ? 'bg-indigo-700' : '' }}">
     Borrowed Books
 </a>
+<a href="{{ route('super-admin.history') }}"
+    class="block py-3 px-6 hover:bg-indigo-700 {{ request()->routeIs('super-admin.discussion_rooms.history') ? 'bg-indigo-700' : '' }}">
+    Discussion Room Logs
+</a>
             </nav>
         </aside>
 
