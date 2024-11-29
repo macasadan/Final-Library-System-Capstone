@@ -111,10 +111,7 @@
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="{{ $room->status === 'available' ? 'maintenance' : 'available' }}">
-                                    <button type="submit" class="inline-flex items-center px-3 py-1 rounded-md text-white 
-                                        {{ $room->status === 'available' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }}">
-                                        {{ $room->status === 'available' ? 'Set Maintenance' : 'Set Available' }}
-                                    </button>
+                                 
                                 </form>
                                 @endif
                                 <form action="{{ route('admin.discussion_rooms.update-status', $room) }}" method="POST" class="inline">

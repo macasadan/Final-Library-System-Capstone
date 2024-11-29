@@ -7,6 +7,7 @@ use App\Models\DiscussionRoomReservation;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log; 
 
 class DiscussionRoomController extends Controller
 {
@@ -102,66 +103,87 @@ class DiscussionRoomController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'discussion_room_id' => 'required|exists:discussion_rooms,id',
-            'start_time' => 'required|date|after:now',
-            'end_time' => 'required|date|after:start_time',
-            'purpose' => 'required|string|max:255',
-        ]);
+        try {
+            // Validate input
+            $request->validate([
+                'discussion_room_id' => 'required|exists:discussion_rooms,id',
+                'start_time' => 'required|date|after:now',
+                'end_time' => 'required|date|after:start_time',
+                'purpose' => 'required|string|max:255',
+            ]);
 
-        $startTime = Carbon::parse($request->start_time);
-        $endTime = Carbon::parse($request->end_time);
+            // Parse times using Carbon
+            $startTime = Carbon::parse($request->start_time);
+            $endTime = Carbon::parse($request->end_time);
 
-        // Check if duration is not more than 5 hours
-        if ($startTime->diffInHours($endTime) > 5) {
-            return back()->with('error', 'Reservation duration cannot exceed 5 hours.');
-        }
+            // Check reservation duration
+            if ($startTime->diffInHours($endTime) > 5) {
+                return back()->withInput()->with('error', 'Reservations cannot exceed 5 hours. Please shorten your reservation.');
+            }
 
-        // Check for conflicting reservations
-        $conflicting = DiscussionRoomReservation::where('discussion_room_id', $request->discussion_room_id)
+            // Check for conflicting reservations
+            $conflicting = DiscussionRoomReservation::where('discussion_room_id', $request->discussion_room_id)
             ->where('status', 'approved')
             ->where(function ($query) use ($request) {
-                $query->whereBetween('start_time', [$request->start_time, $request->end_time])
-                    ->orWhereBetween('end_time', [$request->start_time, $request->end_time]);
+                $query->where(function ($q) use ($request) {
+                    $q->where('start_time', '<', $request->end_time)
+                      ->where('end_time', '>', $request->start_time);
+                });
             })->exists();
 
-        if ($conflicting) {
-            return back()->with('error', 'The room is already reserved for this time slot.');
-        }
+            if ($conflicting) {
+                return back()->withInput()->with('error', "Room is already reserved from {$conflicting->start_time} to {$conflicting->end_time}.");
+            }
 
-        $reservation = DiscussionRoomReservation::create([
-            'user_id' => Auth::id(),
-            'discussion_room_id' => $request->discussion_room_id,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'purpose' => $request->purpose,
-            'status' => 'pending'
-        ]);
+            // Create reservation
+            $reservation = DiscussionRoomReservation::create([
+                'user_id' => Auth::id(),
+                'discussion_room_id' => $request->discussion_room_id,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'purpose' => $request->purpose,
+                'status' => 'pending'
+            ]);
 
-        // Check if the reservation has already expired
-        if ($reservation->isExpired()) {
-            $reservation->markAsExpired();
+            return redirect()->route('reservations.index')->with('success', 'Reservation request submitted successfully.');
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Reservation creation error: ' . $e->getMessage());
+            
+            return back()->withInput()->with('error', 'An unexpected error occurred. Please try again.');
         }
-        return redirect()->route('reservations.index')->with('success', 'Reservation request submitted successfully.');
     }
+
 
     // New method for checking room availability in real-time
     public function checkRoomAvailability(Request $request)
     {
-        $roomId = $request->input('room_id');
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
+        try {
+            $roomId = $request->input('room_id');
+            $startTime = Carbon::parse($request->input('start_time'));
+            $endTime = Carbon::parse($request->input('end_time'));
 
-        $conflicting = DiscussionRoomReservation::where('discussion_room_id', $roomId)
-            ->where('status', 'approved')
-            ->where(function ($query) use ($startTime, $endTime) {
-                $query->whereBetween('start_time', [$startTime, $endTime])
-                    ->orWhereBetween('end_time', [$startTime, $endTime]);
-            })->exists();
+            // Check for conflicting reservations
+            $conflicting = DiscussionRoomReservation::where('discussion_room_id', $roomId)
+                ->where('status', 'approved')
+                ->where(function ($query) use ($startTime, $endTime) {
+                    $query->whereBetween('start_time', [$startTime, $endTime])
+                        ->orWhereBetween('end_time', [$startTime, $endTime]);
+                })->exists();
 
-        return response()->json([
-            'is_available' => !$conflicting
-        ]);
+            return response()->json([
+                'is_available' => !$conflicting,
+                'start_time' => $startTime->toDateTimeString(),
+                'end_time' => $endTime->toDateTimeString()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Availability check error: ' . $e->getMessage());
+            
+            return response()->json([
+                'is_available' => false,
+                'error' => 'Error checking availability'
+            ], 400);
+        }
     }
 
     // New method for manual session end

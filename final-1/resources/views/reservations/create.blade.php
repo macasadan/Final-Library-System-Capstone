@@ -88,13 +88,52 @@
 </div>
 @endsection
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const roomSelect = document.getElementById('discussion_room_id');
-        const startTimeInput = document.getElementById('start_time');
-        const endTimeInput = document.getElementById('end_time');
-        const availabilityMessage = document.createElement('div');
-        availabilityMessage.classList.add('text-sm', 'mt-1');
-        startTimeInput.parentNode.insertBefore(availabilityMessage, startTimeInput.nextSibling);
+   document.addEventListener('DOMContentLoaded', function() {
+    const roomSelect = document.getElementById('discussion_room_id');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const availabilityMessage = document.getElementById('availabilityMessage');
+    const submitButton = document.getElementById('submitButton');
+    const reservationForm = document.getElementById('reservationForm');
+
+    // Function to format datetime to match Laravel's expected format
+    function formatDateTimeForLaravel(dateTimeLocal) {
+        if (!dateTimeLocal) return null;
+        const date = new Date(dateTimeLocal);
+        return date.toISOString().slice(0, 19).replace('T', ' ');
+    }
+
+    // Set minimum start time to current time
+    const now = new Date();
+    const formattedNow = now.toISOString().slice(0, 16);
+    startTimeInput.min = formattedNow;
+    endTimeInput.min = formattedNow;
+
+    // Modify form submission to format dates
+    reservationForm.addEventListener('submit', function(e) {
+        // Format dates before submission
+        const startTimeFormatted = formatDateTimeForLaravel(startTimeInput.value);
+        const endTimeFormatted = formatDateTimeForLaravel(endTimeInput.value);
+
+        // Create hidden inputs with formatted times
+        const startTimeHidden = document.createElement('input');
+        startTimeHidden.type = 'hidden';
+        startTimeHidden.name = 'start_time';
+        startTimeHidden.value = startTimeFormatted;
+
+        const endTimeHidden = document.createElement('input');
+        endTimeHidden.type = 'hidden';
+        endTimeHidden.name = 'end_time';
+        endTimeHidden.value = endTimeFormatted;
+
+        // Remove original datetime-local inputs
+        startTimeInput.removeAttribute('name');
+        endTimeInput.removeAttribute('name');
+
+        // Append hidden inputs
+        reservationForm.appendChild(startTimeHidden);
+        reservationForm.appendChild(endTimeHidden);
+    });
 
         function checkRoomAvailability() {
             const roomId = roomSelect.value;

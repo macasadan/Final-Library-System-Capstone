@@ -69,41 +69,58 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 <script>
-document.getElementById('downloadPdf').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text('PC Room Session Logs', 14, 20);
-    
-    // Create table data
-    const tableData = Array.from(document.querySelectorAll('#sessionLogsTable tbody tr'))
-        .filter(row => row.querySelector('td:first-child').textContent !== 'No completed sessions found')
-        .map(row => {
-            const cells = row.querySelectorAll('td');
-            return [
-                cells[0].textContent.trim(),
-                cells[1].textContent.trim(),
-                cells[2].textContent.trim(),
-                cells[3].textContent.trim(),
-                cells[4].textContent.trim(),
-                cells[5].textContent.trim()
-            ];
+document.addEventListener('DOMContentLoaded', function() {
+    const downloadButton = document.getElementById('downloadPdf');
+    if (downloadButton) {
+        downloadButton.addEventListener('click', function() {
+            try {
+                // Ensure libraries are loaded
+                if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
+                    throw new Error('jsPDF library not loaded');
+                }
+
+                const { jsPDF } = jspdf;
+                const doc = new jsPDF('landscape');
+                
+                doc.setFontSize(18);
+                doc.text('PC Room Session Logs', 14, 20);
+                
+                const tableBody = document.querySelectorAll('#sessionLogsTable tbody tr');
+                
+                if (tableBody.length === 0 || tableBody[0].querySelector('td').textContent.includes('No completed sessions found')) {
+                    alert('No data available to export');
+                    return;
+                }
+
+                const tableData = Array.from(tableBody)
+                    .map(row => {
+                        const cells = row.querySelectorAll('td');
+                        return [
+                            cells[0].textContent.trim(),
+                            cells[1].textContent.trim(),
+                            cells[2].textContent.trim(),
+                            cells[3].textContent.trim(),
+                            cells[4].textContent.trim(),
+                            cells[5].textContent.trim()
+                        ];
+                    });
+
+                doc.autoTable({
+                    startY: 30,
+                    head: [['User', 'Email', 'Start Time', 'End Time', 'Duration', 'Purpose']],
+                    body: tableData,
+                    theme: 'striped',
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+                });
+
+                doc.save('session_logs.pdf');
+            } catch (error) {
+                console.error('PDF download error:', error);
+                alert('Failed to download PDF. Please check console for details.');
+            }
         });
-
-    // Generate table
-    doc.autoTable({
-        startY: 30,
-        head: [['User', 'Email', 'Start Time', 'End Time', 'Duration', 'Purpose']],
-        body: tableData,
-        theme: 'striped',
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-
-    // Save the PDF
-    doc.save('session_logs.pdf');
+    }
 });
 </script>
 @endpush

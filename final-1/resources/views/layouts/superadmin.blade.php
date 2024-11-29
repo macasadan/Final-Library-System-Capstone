@@ -150,29 +150,40 @@
         </div>
     </div>
 
-    @push('scripts')
-    <script>
+    <script defer>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebar-overlay');
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const mobileSidebarClose = document.getElementById('mobile-sidebar-close');
 
-            // Toggle sidebar on mobile
-            mobileMenuToggle.addEventListener('click', function() {
-                sidebar.classList.remove('-translate-x-full');
-                sidebarOverlay.classList.remove('hidden');
-            });
-
-            // Close sidebar on mobile
-            function closeSidebar() {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
+            // Ensure elements exist before adding event listeners
+            if (mobileMenuToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar on mobile
+                mobileMenuToggle.addEventListener('click', function() {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebarOverlay.classList.remove('hidden');
+                });
             }
 
-            mobileSidebarClose.addEventListener('click', closeSidebar);
-            sidebarOverlay.addEventListener('click', closeSidebar);
+            // Close sidebar function
+            function closeSidebar() {
+                if (sidebar && sidebarOverlay) {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                }
+            }
+
+            // Add event listeners if elements exist
+            if (mobileSidebarClose) {
+                mobileSidebarClose.addEventListener('click', closeSidebar);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
         });
     </script>
-    @endpush
+    @stack('scripts')
 </body>
+</html>

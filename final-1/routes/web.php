@@ -20,7 +20,7 @@ use App\Http\Controllers\SuperAdmin\SuperadminmainnaniController;
 
 // Public Routes
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 // Profile Routes
@@ -101,6 +101,13 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
             ->name('check-expired');
         Route::get('/history', [AdminDiscussionRoomController::class, 'history'])
             ->name('history');
+            Route::patch('/{room}/room-status', [AdminDiscussionRoomController::class, 'updateRoomStatus'])
+            ->name('room-status');
+            Route::patch('/{room}/update-status', [AdminDiscussionRoomController::class, 'updateStatus'])
+            ->name('update-status');
+        
+        Route::post('/{room}/end-session', [AdminDiscussionRoomController::class, 'endSession'])
+            ->name('end-session');
             
     });
     // PC Room admin routes
